@@ -54,6 +54,7 @@ client.on('room.message', async (roomId, event) => {
         //let buffer = Buffer.from(svgCode)
         //const encrypted = await client.crypto.encryptMedia(readFileSync('app/image.png'));
         svg2img(svgCode, async (error, buffer) => {
+            console.log(svgCode)
 
             const encrypted = await client.crypto.encryptMedia(Buffer.from(svgCode));
             const mxc = await client.uploadContent(encrypted.buffer, 'image/svg+xml');
@@ -67,9 +68,19 @@ client.on('room.message', async (roomId, event) => {
                 body: 'mermaid.svg',
                 info: {
                     mimetype: 'image/svg+xml',
-                    size: 10192, //buffer.length,
+                    //size: 10192, //buffer.length,
                     w: 52,
-                    h: 160
+                    h: 160,
+                    thumbnail_file: {
+                        url: mxc2,
+                        ...encrypted2.file
+                    },
+                    thumbnail_info: {
+                        mimetype: 'image/png',
+                        w: 52,
+                        h: 160,
+                       // size: 10192
+                    }
                 },
                 file: {
                     url: mxc,
