@@ -53,7 +53,14 @@ client.on('room.message', async (roomId, event) => {
         
         //let buffer = Buffer.from(svgCode)
         //const encrypted = await client.crypto.encryptMedia(readFileSync('app/image.png'));
-        svg2img(svgCode, async (error, buffer) => {
+        svg2img(svgCode, {
+            resvg: {
+                font: {
+                    defaultFontFamily: 'Roboto'
+                },
+                textRendering: 2, // geometric precision
+            }
+        }, async (error, buffer) => {
             console.log(svgCode)
 
             const encrypted = await client.crypto.encryptMedia(Buffer.from(svgCode));
