@@ -21,6 +21,9 @@ As a workaround, a thumbnail/preview of the diagram gets rendered to PNG and att
 
 SVG's are really great. But also their implementation is weird. To give an example: Rocket.chat would preview SVG's on the desktop app and Chrome, but not on Firefox.
 
+### Flowcharts don't render text unless specific settings are set
+See the issue [here](https://github.com/mermaid-js/mermaid-cli/issues/112).
+
 
 ### USERNAME -> LOGINNAME
 It seems weird to use this synonym for username while matrix tends to go for "username". Well, it turns out there is an environment variable on Windows called %USERNAME%, thus giving errors when this was run on Windows. Loginname it is!
@@ -28,3 +31,6 @@ It seems weird to use this synonym for username while matrix tends to go for "us
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
+
+/help in profile section?

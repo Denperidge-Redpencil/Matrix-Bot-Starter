@@ -1,5 +1,7 @@
-import {MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider, SimpleFsStorageProvider, AutojoinRoomsMixin, ConsoleLogger} from 'matrix-bot-sdk';
+import {MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider,  SimpleFsStorageProvider, AutojoinRoomsMixin, ConsoleLogger, ImageMessageEventContent} from 'matrix-bot-sdk';
 import { getFromEnv, loadConfig } from './env';
+
+
 //import mermaid from 'mermaid';
 //import { run } from '@mermaid-js/mermaid-cli';
 //import { launch as puppeteerLaunch, Browser } from 'puppeteer';
@@ -7,8 +9,13 @@ import url from 'url';
 import mermaid from 'headless-mermaid';
 import svg2img from 'svg2img';
 import { readFileSync, writeFileSync } from 'fs';
+import sharp from 'sharp';
 
 const homeserverUrl = getFromEnv('HOMESERVER_URL');
+
+let self : string;
+const regexMermaid = new RegExp('```mermaid(.*?|\n)*```', 'gmi');
+
 
 async function checkForAccessToken() {
     if (getFromEnv('PASSWORD', true) != '') {
@@ -39,7 +46,6 @@ async function matrixLogin() {
     const client = new MatrixClient(homeserverUrl, getFromEnv('ACCESS_TOKEN'), storage, crypto);
     AutojoinRoomsMixin.setupOnClient(client);
 
-
     return Promise.all([client.getUserId(), client.getJoinedRooms(), client.start()]).then((params: [string, string[], void]) => {
         self = params[0];
         //browser = params[1];
@@ -64,107 +70,10 @@ async function matrixLogin() {
                 if (mermaidBlocks.length < 1) return;
                 let diagramDefinition = mermaidBlocks[0].replace('```mermaid', '').replace('```', '');
                 console.log(diagramDefinition)
-                let svgCode : string = await mermaid.execute(diagramDefinition);
-        
-                //console.log(svgCode)
-                
-                //let buffer = Buffer.from(svgCode)
-                //const encrypted = await client.crypto.encryptMedia(readFileSync('app/image.png'));
-                svg2img(svgCode, {
-                    resvg: {
-                        font: {
-                            defaultFontFamily: 'Roboto'
-                        },
-                        textRendering: 2, // geometric precision
-                    }
-                }, async (error, buffer) => {
+                renderMermaid(diagramDefinition).then((svgCode : string) => {
                     console.log(svgCode)
-        
-                    const encrypted = await client.crypto.encryptMedia(Buffer.from(svgCode));
-                    const mxc = await client.uploadContent(encrypted.buffer, 'image/svg+xml');
-        
-        
-                    const encrypted2 = await client.crypto.encryptMedia(buffer);
-                    const mxc2 = await client.uploadContent(encrypted2.buffer, 'image/png');
-        
-                    await client.sendMessage(roomId, {
-                        msgtype: 'm.image',
-                        body: 'mermaid.svg',
-                        info: {
-                            mimetype: 'image/svg+xml',
-                            //size: 10192, //buffer.length,
-                            w: 52,
-                            h: 160,
-                            thumbnail_file: {
-                                url: mxc2,
-                                ...encrypted2.file
-                            },
-                            thumbnail_info: {
-                                mimetype: 'image/png',
-                                w: 52,
-                                h: 160,
-                               // size: 10192
-                            }
-                        },
-                        file: {
-                            url: mxc,
-                            ...encrypted.file
-                        }
-                    })
-                })
-                //let mxc = await client.uploadContentFromUrl('https://ih1.redbubble.net/image.1932679503.2966/poster,504x498,f8f8f8-pad,600x600,f8f8f8.jpg')
-                
-                /*
-                client.sendMessage(roomId, {
-                    msgtype: 'm.text',
-                    body: 'https://ih1.redbubble.net/image.1932679503.2966/poster,504x498,f8f8f8-pad,600x600,f8f8f8.jpg'
-                })
-                /*
-                svg2img(svgCode, async (error, buffer) => {
-                    //const mxc = await client.uploadContent(encrypted.buffer);
-                    const encrypted = await client.crypto.encryptMedia(buffer);
-        
-                    const mxc = await client.uploadContent(encrypted.buffer, 'image/svg+xml');
-        
-                    console.log(client.uploadContentFromUrl)
-            
-                    client.sendMessage(roomId, {
-                        msgtype: 'm.image',
-                        body: 'mermaid.svg',
-                        info: {
-                            mimetype: 'image/svg+xml'
-                        },
-                        file: {
-                            url: mxc,
-                            ...encrypted.file
-                        }
-                    })
+                    sendImage(client, roomId, 'mermaid.svg', 'image/svg+xml', svgCode); 
                 });
-               
-                //console.log(mermaid.parse(diagramDefinition))
-                
-                //let render = await renderMermaid(diagramDefinition);
-                //console.log(render)
-        
-                //let parse = mermaid.parse(diagramDefinition)
-                //console.log(parse)
-                
-                //let document = '';
-                /*
-                mermaid.render('graph', diagramDefinition, (svgCode) => {
-                    client.sendHtmlText(roomId, svgCode)
-                });
-                /*
-                client.sendMessage(roomId, { 
-                    'msgtype': 'm.text',
-                    'body': diagramDefinition
-                });
-                /*
-                client.sendMessage(roomId, { 
-                    'msgtype': 'm.text',
-                    'body': parse
-                });
-                */
                 
             } else {
                 console.log('null')
@@ -183,40 +92,87 @@ checkForAccessToken().then(matrixLogin).then((value: (SimpleFsStorageProvider | 
 });
 
 
-
-
-let self : string;
-//let browser : Browser;
-
-//mermaid.initialize({startOnLoad: true});
-
-
-
-const regexMermaid = new RegExp('```mermaid(.*?|\n)*```', 'gmi');
+async function renderMermaid(diagramDefinition : string) : Promise<string> {
+    return mermaid.execute(diagramDefinition, {
+        flowchart: {
+            htmlLabels: false
+        }
+    });
+}
 
 
 
-// Based on https://github.com/mermaid-js/mermaid-cli/blob/5ff8be5250ed6c0b6f52d85bcbba2a4d9e477336/src/index.js#L201
-async function renderMermaid(diagramDefinition : string) {
-    //let page = await browser.newPage();
-    /*await page.goto(url.pathToFileURL('./app/index.html').toString())
-    console.log("enwpage")
-    await page.evaluate((diagramDefinition : string) => {
-        
-        console.log("---")
-        console.log(diagramDefinition)
-        //console.log(mermaid)
-        console.log("---")
-        //mermaid.initialize({})
+/**
+ * 
+ * @param client 
+ * @param roomId 
+ * @param filestream 
+ * @param mimetype image/svg+xml 
+ */
+async function sendImage(client : MatrixClient, roomId : string, filename: string, mimetype: string, filestring : string) {
+    let isSvg = mimetype.includes('svg');
 
-        /*
-        mermaid.render('graph', diagramDefinition, (svgCode: any) => {
-            console.log("e")
-            console.log(svgCode);
-        });*/
-    //}, diagramDefinition)
-    /*
-    page.$eval('body', (body) => {
-        console.log(body)
-    })*/
+    // Sharp will be used to:
+    // - Determine width, height and size (all image types)
+    // - Create a buffer (if not SVG)
+    let sharpImage : sharp.Sharp = sharp(Buffer.from(filestring))
+    let buffer = isSvg ? Buffer.from(filestring) : await sharpImage.toBuffer();
+    let sizeData = await sharpImage.metadata();
+    
+    const encrypted = await client.crypto.encryptMedia(buffer);
+    const mxc = await client.uploadContent(encrypted.buffer, mimetype);
+
+    let message : ImageMessage = {
+        msgtype: 'm.image',
+        body: filename,
+        info : {
+            mimetype: mimetype,
+            //size: sizeData.size,
+            w: sizeData.width,
+            h: sizeData.height,
+        },
+        file: {
+            url: mxc,
+            ...encrypted.file
+        }
+    };
+
+    // If SVG, render a png as preview/thumbnail
+    if (isSvg) {
+        console.log("thub")
+        const thumbnailBuffer = await sharpImage.toBuffer();
+        const encrypted2 = await client.crypto.encryptMedia(thumbnailBuffer);
+        const mxc2 = await client.uploadContent(encrypted2.buffer, 'image/png');
+
+        message.info.thumbnail_file = {
+            url: mxc2,
+            ...encrypted2.file
+        };
+        message.info.thumbnail_info = {  // This doesn't do things I think but I'm keeping it here for now
+            mimetype: 'image/png',
+            //size: sizeData.size,
+            w: sizeData.width,
+            h: sizeData.height,
+        };
+    }
+    console.log("thumbnailset")
+
+
+    await client.sendMessage(roomId, message);
+    console.log("sent")
+}
+
+interface ImageMessage {
+    msgtype : string,
+    body: string,
+    info: ImageMessageInfo,
+    file: {}
+}
+
+interface ImageMessageInfo {
+    mimetype: string,
+    w?: number,
+    h?: number,
+    thumbnail_file?: {},
+    thumbnail_info?: ImageMessageInfo
 }
