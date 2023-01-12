@@ -13,8 +13,7 @@ import sharp from 'sharp';
 
 interface RenderedDiagram {
     requestEventId: string,
-    answerEventId: string,
-    event: any
+    answerEventId: string
 }
 
 const homeserverUrl = getFromEnv('HOMESERVER_URL');
@@ -131,8 +130,7 @@ async function setupCommands(client : MatrixClient) {
                     sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode).then((eventId) => {
                         renderedDiagrams.push({ 
                             requestEventId: event['event_id'],
-                            answerEventId: eventId,
-                            event
+                            answerEventId: eventId
                         });
                     });
                 });
