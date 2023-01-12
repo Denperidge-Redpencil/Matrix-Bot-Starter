@@ -24,10 +24,8 @@ async function checkForAccessToken() {
         // Based on https://github.com/turt2live/matrix-bot-sdk/blob/13ce618976446ac4c8d325acf7aab80a9f5e8d2c/examples/login_register.ts
         let auth = await new MatrixAuth(homeserverUrl).passwordLogin(getFromEnv('USERNAME'), getFromEnv('PASSWORD'));
         let data = readFileSync('.env', { encoding: 'utf-8' });
-        data += `ACCESS_TOKEN="${auth.accessToken}"`;
-        console.log(data)
-        data = data.replace(/USERNAME=.*\n/gi, '').replace(/PASSWORD=.*\n/gi, '');
-        console.log(data)
+        data += `\nACCESS_TOKEN="${auth.accessToken}"`;
+        data = data.replace(/USERNAME=.*(\n|)/gi, '').replace(/PASSWORD=.*(\n|)/gi, '');
         writeFileSync('.env', data, {
             encoding: 'utf-8'
         });
@@ -52,7 +50,7 @@ async function matrixLogin() {
             if (!event['content']) return;  // If no content, skip
             
             const sender = event['sender'];
-            if (sender == self || self == undefined) return;  // If message is from this bot, skip
+            if (sender == self || self == null) return;  // If message is from this bot, skip
             
             const body = event['content']['body'];
         
@@ -180,11 +178,10 @@ async function matrixLogin() {
 
 }
 
-checkForAccessToken().then(() => {
-    matrixLogin().then((value: (SimpleFsStorageProvider | RustSdkCryptoStorageProvider | MatrixClient)[]) => {
+checkForAccessToken().then(matrixLogin).then((value: (SimpleFsStorageProvider | RustSdkCryptoStorageProvider | MatrixClient)[]) => {
 
-    })
-})
+});
+
 
 
 
