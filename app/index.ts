@@ -86,7 +86,7 @@ async function setupCommands(client : MatrixClient) {
             console.log(diagramsToChange)
             for (let i = 0; i < diagramsToChange.length; i++) {
                 
-
+                
                 /*
                 let newText = 'edited';
 
@@ -110,8 +110,135 @@ async function setupCommands(client : MatrixClient) {
                     });
                     */
                 //}
-                
+                mermaidInfoFromText(body).then((info) => {
+                    if (info == null) return;
+        
+                    for (let i=0; i < info.length; i++) {
+                        const params = info[i];
+        
+                        const diagramDefinition = params[0];
+                        const extension = params[2];
+                        const mimetype = params[1];
+                        
+        
+                        renderMermaid(diagramDefinition).then(async (filestring : string) => {
+                            let filename = 'mermaid.' + extension;
+
+                            let isSvg = mimetype.includes('svg');
+
+                            // Sharp will be used to:
+                            // - Determine width, height and size (all image types)
+                            // - Create a buffer (if not SVG)
+                            let sharpImage : sharp.Sharp = sharp(Buffer.from(filestring))
+                            let buffer = isSvg ? Buffer.from(filestring) : await sharpImage.toBuffer();
+                            let sizeData = await sharpImage.metadata();
+                            
+                            const encrypted = await client.crypto.encryptMedia(buffer);
+                            const mxc = await client.uploadContent(encrypted.buffer, mimetype);
+
+                            let message : ImageMessage = {
+                                msgtype: 'm.image',
+                                body: filename,
+                                info : {
+                                    mimetype: mimetype,
+                                    //size: sizeData.size,
+                                    w: sizeData.width,
+                                    h: sizeData.height,
+                                },
+                                file: {
+                                    url: mxc,
+                                    ...encrypted.file
+                                }
+                            };
+
+                            // If SVG, render a png as preview/thumbnail
+                            if (isSvg) {
+                                console.log("thub")
+                                const thumbnailBuffer = await sharpImage.toBuffer();
+                                const encrypted2 = await client.crypto.encryptMedia(thumbnailBuffer);
+                                const mxc2 = await client.uploadContent(encrypted2.buffer, 'image/png');
+
+                                message.info.thumbnail_file = {
+                                    url: mxc2,
+                                    ...encrypted2.file
+                                };
+                                message.info.thumbnail_info = {  // This doesn't do things I think but I'm keeping it here for now
+                                    mimetype: 'image/png',
+                                    //size: sizeData.size,
+                                    w: sizeData.width,
+                                    h: sizeData.height,
+                                };
+                            }
+                            console.log("thumbnailset")
+
+                            /*
+                            if (requestEventId !== null) {
+                                message['m.relates_to'] = {
+                                    'm.'
+                                }
+                            }*/
+
+                            
+                                let newMessage : ImageMessage = {
+                                    msgtype: 'm.image',
+                                    body: filename,
+                                    info : {
+                                        mimetype: mimetype,
+                                        //size: sizeData.size,
+                                        w: sizeData.width,
+                                        h: sizeData.height,
+                                    },
+                                    file: {
+                                        url: mxc,
+                                        ...encrypted.file
+                                    }
+                                }
+                            
+                                // If SVG, render a png as preview/thumbnail
+                                if (isSvg) {
+                                    console.log("thub")
+                                    const thumbnailBuffer = await sharpImage.toBuffer();
+                                    const encrypted2 = await client.crypto.encryptMedia(thumbnailBuffer);
+                                    const mxc2 = await client.uploadContent(encrypted2.buffer, 'image/png');
+                            
+                                    newMessage.info.thumbnail_file = {
+                                        url: mxc2,
+                                        ...encrypted2.file
+                                    };
+                                    newMessage.info.thumbnail_info = {  // This doesn't do things I think but I'm keeping it here for now
+                                        mimetype: 'image/png',
+                                        //size: sizeData.size,
+                                        w: sizeData.width,
+                                        h: sizeData.height,
+                                    };
+                                }
+
+
+                                message['m.new_content'] = newMessage;
+                                message['m.relates_to'] = {
+                                    rel_type: 'm.replace',
+                                    event_id: diagramsToChange[i]
+                                }
+                                console.log("replacing")
+                                console.log(newMessage)
+                            
+                            console.log("---")
+                            
+                            message.body = '* ' + message.body
+                            message["'body'"] = '* ' + message.body
+                            console.log(message)
+
+                            console.log("---")
+
+                            
+                            client.sendEvent(roomId, 'm.room.message', {
+                                'content': message
+                            });
+                        });
+                    }
+                });
             }
+            return;
         }
 
         mermaidInfoFromText(body).then((info) => {
@@ -121,15 +248,10 @@ async function setupCommands(client : MatrixClient) {
                 const params = info[i];
 
                 const diagramDefinition = params[0];
-                const extension = params[1];
-                const mimetype = params[2];
+                const extension = params[2];
+                const mimetype = params[1];
 
                 renderMermaid(diagramDefinition).then(async (svgCode : string) => {
-                    let editId = '';
-                    if (diagramsToChange.length > 0) {
-                        editId = diagramsToChange[i];
-                    }
-
                     sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode).then((eventId) => {
                         renderedDiagrams.push({ 
                             requestEventId: event['event_id'],
@@ -138,11 +260,7 @@ async function setupCommands(client : MatrixClient) {
                     });
                 });
             }
-
-
-
-            
-        })
+        });
 
         
 
@@ -273,15 +391,59 @@ async function sendImage(client : MatrixClient, roomId : string, filename: strin
     }
     console.log("thumbnailset")
 
+    /*
+    if (requestEventId !== null) {
+        message['m.relates_to'] = {
+            'm.'
+        }
+    }*/
+
+    
     if (replaceEventId != '') {
-        message.new_content = message;
-        message.relates_to = {
-            'rel_type': "m.replace",
-            'event_id': replaceEventId
+        let newMessage : ImageMessage = {
+            msgtype: 'm.image',
+            body: filename,
+            info : {
+                mimetype: mimetype,
+                //size: sizeData.size,
+                w: sizeData.width,
+                h: sizeData.height,
+            },
+            file: {
+                url: mxc,
+                ...encrypted.file
+            }
+        };
+    
+        // If SVG, render a png as preview/thumbnail
+        if (isSvg) {
+            console.log("thub")
+            const thumbnailBuffer = await sharpImage.toBuffer();
+            const encrypted2 = await client.crypto.encryptMedia(thumbnailBuffer);
+            const mxc2 = await client.uploadContent(encrypted2.buffer, 'image/png');
+    
+            newMessage.info.thumbnail_file = {
+                url: mxc2,
+                ...encrypted2.file
+            };
+            newMessage.info.thumbnail_info = {  // This doesn't do things I think but I'm keeping it here for now
+                mimetype: 'image/png',
+                //size: sizeData.size,
+                w: sizeData.width,
+                h: sizeData.height,
+            };
+        }
+
+
+        message['m.new_content'] = newMessage;
+        message['m.relates_to'] = {
+            rel_type: 'm.replace',
+            event_id: replaceEventId
         }
         console.log("replacing")
-        console.log(message)
+        console.log(newMessage)
     }
+
 
 
     return client.sendMessage(roomId, message);
@@ -290,11 +452,12 @@ async function sendImage(client : MatrixClient, roomId : string, filename: strin
 interface ImageMessage {
     msgtype : string,
     body: string,
+    "'body'"?: string,
     info: ImageMessageInfo,
     file: {},
 
-    new_content?: ImageMessage,
-    relates_to?: {
+    'm.new_content'?: ImageMessage,
+    'm.relates_to'?: {
         rel_type: string,
         event_id: string
     }
