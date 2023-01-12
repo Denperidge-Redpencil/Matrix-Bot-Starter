@@ -108,13 +108,13 @@ async function matrixLogin() {
                     
                     console.log(`${mimetype} - ${extension}`)
     
-                    let svgCode = await renderMermaid(diagramDefinition)//.then(async (svgCode : string) => {
+                    renderMermaid(diagramDefinition).then(async (svgCode : string) => {
 
                         console.log(diagramDefinition)
                         console.log(svgCode)
     
-                        await sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode); 
-                    //});
+                        sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode); 
+                    });
                 };
                 
             } else {
