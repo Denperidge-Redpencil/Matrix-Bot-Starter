@@ -11,10 +11,17 @@ import svg2img from 'svg2img';
 import { readFileSync, writeFileSync } from 'fs';
 import sharp from 'sharp';
 
+interface RenderedDiagram {
+    requestEventId: string,
+    answerEventId: string
+}
+
 const homeserverUrl = getFromEnv('HOMESERVER_URL');
 
 let self : string;
 const regexMermaid = new RegExp('```mermaid(.*?|\n)*?```', 'gmi');
+let renderedDiagrams : Array<RenderedDiagram> = []
+
 
 
 async function checkForAccessToken() {
@@ -64,62 +71,141 @@ async function setupCommands(client : MatrixClient) {
         const sender = event['sender'];
         if (sender == self) return;  // If message is from this bot, skip
         
+        
         const body = event['content']['body'];
-    
-        // regexMermaid.exec is not the same as match!
-        let mermaidBlocks : Array<string>|null = body.match(regexMermaid);
 
-        if (mermaidBlocks !== null) {
-            if (mermaidBlocks.length < 1) return;
-            for (let i = 0; i < mermaidBlocks.length; i++) {
-                let mermaidBlock = mermaidBlocks[i];
-                let diagramDefinition = mermaidBlock.replace(/```.*/gi, '');
-                let mimetype : string, extension : string;
+        console.log(event)
+        
+        // Message edit
+        let diagramsToChange : Array<string> = [];
+        if ('m.new_content' in event.content) {
+            console.log("next")
+            diagramsToChange = renderedDiagrams
+                .filter((render : RenderedDiagram) => render.requestEventId == event.content['m.relates_to'].event_id)
+                .map((render : RenderedDiagram) => render.answerEventId);
+            console.log(diagramsToChange)
+            for (let i = 0; i < diagramsToChange.length; i++) {
                 
-                let firstLine = mermaidBlock.split('\n')[0];
-                // If firstline includes an extension
-                if (firstLine.includes('.')) {
-                    extension = firstLine.substring(firstLine.indexOf('.')+1).toLowerCase();
 
-                    // Switch case for common extension pitfalls
-                    switch (extension) {
-                        case 'svg':
-                            mimetype = `image/svg+xml`;
-                            break;
-                        case 'svg+xml':
-                            mimetype = 'svg';
-                            break;
-                        case 'jpg':
-                            mimetype = `image/jpeg`;
-                            break;                        
-                        default:
-                            mimetype = `image/${extension}`;
-                            break;
-                    }
+                /*
+                let newText = 'edited';
 
-                } else {
-                    // Default to png
-                    mimetype = `image/png`;
-                    extension = 'png';
-                }
+                mermaidInfoFromText(body).then((params) => {
+                    if (params == null) return;
+                    
+                    const diagramDefinition = params[0];
+                    const extension = params[1];
+                    const mimetype = params[2];
+
+                    let filename = 'mermaid.' + extension;
+
+
+                    /*
+                    client.sendEvent(roomId, 'm.room.message', {
+                        body: `* ${filename}`,
+                        msgtype: 'm.image',
+                        'm.new_content': {
+                            body: filename,
+                        }
+                    });
+                    */
+                //}
                 
-                console.log(`${mimetype} - ${extension}`)
+            }
+        }
+
+        mermaidInfoFromText(body).then((info) => {
+            if (info == null) return;
+
+            for (let i=0; i < info.length; i++) {
+                const params = info[i];
+
+                const diagramDefinition = params[0];
+                const extension = params[1];
+                const mimetype = params[2];
 
                 renderMermaid(diagramDefinition).then(async (svgCode : string) => {
-                    sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode); 
+                    let editId = '';
+                    if (diagramsToChange.length > 0) {
+                        editId = diagramsToChange[i];
+                    }
+
+                    sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode).then((eventId) => {
+                        renderedDiagrams.push({ 
+                            requestEventId: event['event_id'],
+                            answerEventId: eventId
+                        });
+                    });
                 });
-            };
+            }
+
+
+
             
-        } else {
-            console.log('null')
-        }
+        })
+
+        
+
     
+        // regexMermaid.exec is not the same as match!
+        
     });
+
 }
 
 checkForAccessToken().then(matrixLogin).then(setupCommands).catch((err) => {
     console.error(err);
 });
+
+async function mermaidInfoFromText(body: string) {
+    let mermaidBlocks : Array<string>|null = body.match(regexMermaid);
+
+    let info = [];
+
+    if (mermaidBlocks !== null) {
+        if (mermaidBlocks.length < 1) return;
+        for (let i = 0; i < mermaidBlocks.length; i++) {
+            let mermaidBlock = mermaidBlocks[i];
+            let diagramDefinition = mermaidBlock.replace(/```.*/gi, '');
+            let mimetype : string, extension : string;
+            
+            let firstLine = mermaidBlock.split('\n')[0];
+            // If firstline includes an extension
+            if (firstLine.includes('.')) {
+                extension = firstLine.substring(firstLine.indexOf('.')+1).toLowerCase();
+                // Switch case for common extension pitfalls
+                switch (extension) {
+                    case 'svg':
+                        mimetype = `image/svg+xml`;
+                        break;
+                    case 'svg+xml':
+                        mimetype = 'svg';
+                        break;
+                    case 'jpg':
+                        mimetype = `image/jpeg`;
+                        break;                        
+                    default:
+                        mimetype = `image/${extension}`;
+                        break;
+                }
+            } else {
+                // Default to png
+                mimetype = `image/png`;
+                extension = 'png';
+            }
+
+            console.log(`${mimetype} - ${extension}`)
+            info.push([diagramDefinition, mimetype, extension]);
+        };
+
+        return info;
+        
+    } else {
+        console.log('null')
+        return null;
+    }
+
+}
 
 
 async function renderMermaid(diagramDefinition : string) : Promise<string> {
@@ -139,7 +225,7 @@ async function renderMermaid(diagramDefinition : string) : Promise<string> {
  * @param filestream 
  * @param mimetype image/svg+xml 
  */
-async function sendImage(client : MatrixClient, roomId : string, filename: string, mimetype: string, filestring : string) {
+async function sendImage(client : MatrixClient, roomId : string, filename: string, mimetype: string, filestring : string, replaceEventId = '') {
     let isSvg = mimetype.includes('svg');
 
     // Sharp will be used to:
@@ -187,16 +273,31 @@ async function sendImage(client : MatrixClient, roomId : string, filename: strin
     }
     console.log("thumbnailset")
 
+    if (replaceEventId != '') {
+        message.new_content = message;
+        message.relates_to = {
+            'rel_type': "m.replace",
+            'event_id': replaceEventId
+        }
+        console.log("replacing")
+        console.log(message)
+    }
 
-    await client.sendMessage(roomId, message);
-    console.log("sent")
+
+    return client.sendMessage(roomId, message);
 }
 
 interface ImageMessage {
     msgtype : string,
     body: string,
     info: ImageMessageInfo,
-    file: {}
+    file: {},
+
+    new_content?: ImageMessage,
+    relates_to?: {
+        rel_type: string,
+        event_id: string
+    }
 }
 
 interface ImageMessageInfo {
@@ -204,5 +305,5 @@ interface ImageMessageInfo {
     w?: number,
     h?: number,
     thumbnail_file?: {},
-    thumbnail_info?: ImageMessageInfo
+    thumbnail_info?: ImageMessageInfo,
 }
