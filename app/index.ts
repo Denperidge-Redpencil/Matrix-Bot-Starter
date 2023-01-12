@@ -68,11 +68,43 @@ async function matrixLogin() {
         
             if (mermaidBlocks !== null) {
                 if (mermaidBlocks.length < 1) return;
-                let diagramDefinition = mermaidBlocks[0].replace('```mermaid', '').replace('```', '');
+                
+                let diagramDefinition = mermaidBlocks[0].replace(/```.*$/gmi, '');
+                let mimetype : string, extension : string;
+                
+                let firstLine = mermaidBlocks[0].split('\n')[0];
+                // If firstline includes an extension
+                if (firstLine.includes('.')) {
+                    extension = firstLine.substring(firstLine.indexOf('.')+1).toLowerCase();
+
+                    // Switch case for common extension pitfalls
+                    switch (extension) {
+                        case 'svg':
+                            mimetype = `image/svg+xml`;
+                            break;
+                        case 'svg+xml':
+                            mimetype = 'svg';
+                            break;
+                        case 'jpg':
+                            mimetype = `image/jpeg`;
+                            break;                        
+                        default:
+                            mimetype = `image/${extension}`;
+                            break;
+                    }
+
+                } else {
+                    // Default to png
+                    mimetype = `image/png`;
+                    extension = 'png';
+                }
+                
                 console.log(diagramDefinition)
+                console.log(`${mimetype} - ${extension}`)
+
                 renderMermaid(diagramDefinition).then((svgCode : string) => {
-                    console.log(svgCode)
-                    sendImage(client, roomId, 'mermaid.svg', 'image/svg+xml', svgCode); 
+
+                    sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode); 
                 });
                 
             } else {
