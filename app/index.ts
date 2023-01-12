@@ -13,7 +13,8 @@ import sharp from 'sharp';
 
 interface RenderedDiagram {
     requestEventId: string,
-    answerEventId: string
+    answerEventId: string,
+    event: any
 }
 
 const homeserverUrl = getFromEnv('HOMESERVER_URL');
@@ -73,16 +74,51 @@ async function setupCommands(client : MatrixClient) {
         
         
         const body = event['content']['body'];
-        let requestEventId = event['event_id'];
-        
-        // Message edit
-        if ('m.new_content' in event.content) {
-            // In this case, event['event_id'] refers to the edit event itself, not to the message that is being edited
-            requestEventId = event.content['m.relates_to'].event_id;
-        }
+        let requestEventId = event['event_id']//.replace('\n', '');
+
+        let isEdit = 'm.new_content' in event.content;
 
         mermaidInfoFromText(body).then((info) => {
             if (info == null) return;
+
+            let diagramOrDiagrams = info.length > 1 ? 'diagrams' : 'diagram';
+            let renderingOrRerendering = isEdit ? 'Re-rendering' : 'Rendering';
+            let replyToEvent = event;
+            // Message edit
+            if (isEdit) {
+                console.log(event)
+                // In this case, event['event_id'] refers to the edit event itself, not to the message that is being edited
+                requestEventId = event.content['m.relates_to'].event_id;
+                //replyToEvent = 
+    
+                
+                console.log('req: ' + requestEventId)
+
+                let oldDiagrams : Array<string> = renderedDiagrams
+                    .filter((render : RenderedDiagram) => render.requestEventId == event.content['m.relates_to'].event_id)
+                    .map((render : RenderedDiagram) => render.answerEventId);
+
+                oldDiagrams.forEach((eventId : string) => {
+                    client.redactEvent(roomId, eventId, `The ${diagramOrDiagrams} prompt has been edited.`);
+                })
+            }
+
+            client.sendMessage(roomId, {
+                'msgtype': 'm.notice',
+                'body': `${renderingOrRerendering} ${diagramOrDiagrams}...`,
+                'm.relates_to': {
+                    'm.in_reply_to': {
+                        event_id: requestEventId
+                    }
+                }
+            })
+
+            //client.replyNotice(roomId, replyToEvent, `${renderingOrRerendering} ${diagramOrDiagrams}...`).then((eventId : string) => {
+                //console.log("notice: " + eventId);
+            //});
+
+            
+
 
             for (let i=0; i < info.length; i++) {
                 const params = info[i];
@@ -92,10 +128,11 @@ async function setupCommands(client : MatrixClient) {
                 const mimetype = params[1];
 
                 renderMermaid(diagramDefinition).then(async (svgCode : string) => {
-                    sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode, requestEventId).then((eventId) => {
+                    sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode).then((eventId) => {
                         renderedDiagrams.push({ 
                             requestEventId: event['event_id'],
-                            answerEventId: eventId
+                            answerEventId: eventId,
+                            event
                         });
                     });
                 });
@@ -183,7 +220,7 @@ async function renderMermaid(diagramDefinition : string) : Promise<string> {
  * @param filestream 
  * @param mimetype image/svg+xml 
  */
-async function sendImage(client : MatrixClient, roomId : string, filename: string, mimetype: string, filestring : string, requestEventId : string) {
+async function sendImage(client : MatrixClient, roomId : string, filename: string, mimetype: string, filestring : string, requestEventId? : string) {
     let isSvg = mimetype.includes('svg');
 
     // Sharp will be used to:
@@ -209,12 +246,15 @@ async function sendImage(client : MatrixClient, roomId : string, filename: strin
             url: mxc,
             ...encrypted.file
         },
-        'm.relates_to': {
+    };
+
+    if (requestEventId != null) {
+        message['m.relates_to'] = {
             'm.in_reply_to': {
                 event_id: requestEventId
             }
         }
-    };
+    }
 
     // If SVG, render a png as preview/thumbnail
     if (isSvg) {
