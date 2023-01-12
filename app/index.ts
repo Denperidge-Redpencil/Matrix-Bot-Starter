@@ -1,4 +1,4 @@
-import {MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider,  SimpleFsStorageProvider, AutojoinRoomsMixin, ConsoleLogger, ImageMessageEventContent} from 'matrix-bot-sdk';
+import {MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider, SimpleFsStorageProvider, AutojoinRoomsMixin, ConsoleLogger, ImageMessageEventContent} from 'matrix-bot-sdk';
 import { getFromEnv, loadConfig } from './env';
 
 
@@ -44,94 +44,80 @@ async function matrixLogin() {
     const storage = new SimpleFsStorageProvider('bot.json');
     const crypto = new RustSdkCryptoStorageProvider('./crypto');
     const client = new MatrixClient(homeserverUrl, getFromEnv('ACCESS_TOKEN'), storage, crypto);
+
+    self = await client.getUserId();
     AutojoinRoomsMixin.setupOnClient(client);
+    await client.crypto.prepare(await client.getJoinedRooms());
+    await client.start();
 
-    return Promise.all([client.getUserId(), client.getJoinedRooms(), client.start()]).then((params: [string, string[], void]) => {
-        self = params[0];
-        //browser = params[1];
-        client.crypto.prepare(params[1]);
-        console.log('Client started!');
-        console.log(`Logged in as ${self} on ${homeserverUrl}`);
-        client.on('room.message', async (roomId, event) => {
-            if (!event['content']) return;  // If no content, skip
-            
-            const sender = event['sender'];
-            if (sender == self || self == null) return;  // If message is from this bot, skip
-            
-            const body = event['content']['body'];
-        
-            // regexMermaid.exec is not the same as match!
-            let mermaidBlocks : Array<string>|null = body.match(regexMermaid);
-            client.sendMessage(roomId, {
-                'msgtype': 'm.text',
-                'body': 'meow'
-            })
 
-            console.log(mermaidBlocks);
-        
-            if (mermaidBlocks !== null) {
-                if (mermaidBlocks.length < 1) return;
+    console.log('Client started!');
+    console.log(`Logged in as ${self} on ${homeserverUrl}`);
 
-                console.log(mermaidBlocks.length)
-                for (let i = 0; i < mermaidBlocks.length; i++) {
-                    let mermaidBlock = mermaidBlocks[i];
-
-                    let diagramDefinition = mermaidBlock.replace(/```.*/gi, '');
-                    let mimetype : string, extension : string;
-                    
-                    let firstLine = mermaidBlock.split('\n')[0];
-                    // If firstline includes an extension
-                    if (firstLine.includes('.')) {
-                        extension = firstLine.substring(firstLine.indexOf('.')+1).toLowerCase();
-    
-                        // Switch case for common extension pitfalls
-                        switch (extension) {
-                            case 'svg':
-                                mimetype = `image/svg+xml`;
-                                break;
-                            case 'svg+xml':
-                                mimetype = 'svg';
-                                break;
-                            case 'jpg':
-                                mimetype = `image/jpeg`;
-                                break;                        
-                            default:
-                                mimetype = `image/${extension}`;
-                                break;
-                        }
-    
-                    } else {
-                        // Default to png
-                        mimetype = `image/png`;
-                        extension = 'png';
-                    }
-                    
-                    console.log(`${mimetype} - ${extension}`)
-    
-                    renderMermaid(diagramDefinition).then(async (svgCode : string) => {
-
-                        console.log(diagramDefinition)
-                        console.log(svgCode)
-    
-                        sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode); 
-                    });
-                };
-                
-            } else {
-                console.log('null')
-            }
-        
-        });
-        
-
-        return [storage, crypto, client];
-    });
-
+    return client;
 }
 
-checkForAccessToken().then(matrixLogin).then((value: (SimpleFsStorageProvider | RustSdkCryptoStorageProvider | MatrixClient)[]) => {
+async function setupCommands(client : MatrixClient) {
+    client.on('room.message', async (roomId, event) => {
+        if (!event['content']) return;  // If no content, skip
+        
+        const sender = event['sender'];
+        if (sender == self) return;  // If message is from this bot, skip
+        
+        const body = event['content']['body'];
+    
+        // regexMermaid.exec is not the same as match!
+        let mermaidBlocks : Array<string>|null = body.match(regexMermaid);
 
-}).catch((err) => {
+        if (mermaidBlocks !== null) {
+            if (mermaidBlocks.length < 1) return;
+            for (let i = 0; i < mermaidBlocks.length; i++) {
+                let mermaidBlock = mermaidBlocks[i];
+                let diagramDefinition = mermaidBlock.replace(/```.*/gi, '');
+                let mimetype : string, extension : string;
+                
+                let firstLine = mermaidBlock.split('\n')[0];
+                // If firstline includes an extension
+                if (firstLine.includes('.')) {
+                    extension = firstLine.substring(firstLine.indexOf('.')+1).toLowerCase();
+
+                    // Switch case for common extension pitfalls
+                    switch (extension) {
+                        case 'svg':
+                            mimetype = `image/svg+xml`;
+                            break;
+                        case 'svg+xml':
+                            mimetype = 'svg';
+                            break;
+                        case 'jpg':
+                            mimetype = `image/jpeg`;
+                            break;                        
+                        default:
+                            mimetype = `image/${extension}`;
+                            break;
+                    }
+
+                } else {
+                    // Default to png
+                    mimetype = `image/png`;
+                    extension = 'png';
+                }
+                
+                console.log(`${mimetype} - ${extension}`)
+
+                renderMermaid(diagramDefinition).then(async (svgCode : string) => {
+                    sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode); 
+                });
+            };
+            
+        } else {
+            console.log('null')
+        }
+    
+    });
+}
+
+checkForAccessToken().then(matrixLogin).then(setupCommands).catch((err) => {
     console.error(err);
 });
 
