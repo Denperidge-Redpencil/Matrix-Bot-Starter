@@ -6,8 +6,7 @@
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^9.3.0",
     "dotenv": "^16.0.3",
-    "matrix-bot-sdk": "^0.6.3",
-    "puppeteer": "^19.5.0"
+    "matrix-bot-sdk": "^0.6.3"
   },
   "devDependencies": {
     "headless-mermaid": "^1.3.0",
@@ -17,9 +16,13 @@
     "typescript": "^4.9.4"
   },
   "scripts": {
-    "start": "npx ts-node-dev --files app/index.ts",
+    "start": "node build/index.js",
+    "dev": "npx ts-node-dev --files app/index.ts",
     "build": "npx tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    
+    "start-docker": "docker run --userns=host --network=\"host\" mermatrix",
+    "dev-docker": "npm run build-docker && npm run start-docker",
+    "build-docker": "cp -n .env .env.docker && docker build -t mermatrix ."
   },
   "author": "Denperidge",
   "license": "MIT"
