@@ -14,7 +14,7 @@ import sharp from 'sharp';
 const homeserverUrl = getFromEnv('HOMESERVER_URL');
 
 let self : string;
-const regexMermaid = new RegExp('```mermaid(.*?|\n)*```', 'gmi');
+const regexMermaid = new RegExp('```mermaid(.*?|\n)*?```', 'gmi');
 
 
 async function checkForAccessToken() {
@@ -60,52 +60,62 @@ async function matrixLogin() {
             
             const body = event['content']['body'];
         
-            let mermaidBlocks : RegExpExecArray|null = regexMermaid.exec(body);
+            // regexMermaid.exec is not the same as match!
+            let mermaidBlocks : Array<string>|null = body.match(regexMermaid);
             client.sendMessage(roomId, {
                 'msgtype': 'm.text',
                 'body': 'meow'
             })
+
+            console.log(mermaidBlocks);
         
             if (mermaidBlocks !== null) {
                 if (mermaidBlocks.length < 1) return;
-                
-                let diagramDefinition = mermaidBlocks[0].replace(/```.*$/gmi, '');
-                let mimetype : string, extension : string;
-                
-                let firstLine = mermaidBlocks[0].split('\n')[0];
-                // If firstline includes an extension
-                if (firstLine.includes('.')) {
-                    extension = firstLine.substring(firstLine.indexOf('.')+1).toLowerCase();
 
-                    // Switch case for common extension pitfalls
-                    switch (extension) {
-                        case 'svg':
-                            mimetype = `image/svg+xml`;
-                            break;
-                        case 'svg+xml':
-                            mimetype = 'svg';
-                            break;
-                        case 'jpg':
-                            mimetype = `image/jpeg`;
-                            break;                        
-                        default:
-                            mimetype = `image/${extension}`;
-                            break;
+                console.log(mermaidBlocks.length)
+                for (let i = 0; i < mermaidBlocks.length; i++) {
+                    let mermaidBlock = mermaidBlocks[i];
+
+                    let diagramDefinition = mermaidBlock.replace(/```.*/gi, '');
+                    let mimetype : string, extension : string;
+                    
+                    let firstLine = mermaidBlock.split('\n')[0];
+                    // If firstline includes an extension
+                    if (firstLine.includes('.')) {
+                        extension = firstLine.substring(firstLine.indexOf('.')+1).toLowerCase();
+    
+                        // Switch case for common extension pitfalls
+                        switch (extension) {
+                            case 'svg':
+                                mimetype = `image/svg+xml`;
+                                break;
+                            case 'svg+xml':
+                                mimetype = 'svg';
+                                break;
+                            case 'jpg':
+                                mimetype = `image/jpeg`;
+                                break;                        
+                            default:
+                                mimetype = `image/${extension}`;
+                                break;
+                        }
+    
+                    } else {
+                        // Default to png
+                        mimetype = `image/png`;
+                        extension = 'png';
                     }
+                    
+                    console.log(`${mimetype} - ${extension}`)
+    
+                    let svgCode = await renderMermaid(diagramDefinition)//.then(async (svgCode : string) => {
 
-                } else {
-                    // Default to png
-                    mimetype = `image/png`;
-                    extension = 'png';
-                }
-                
-                console.log(diagramDefinition)
-                console.log(`${mimetype} - ${extension}`)
-
-                renderMermaid(diagramDefinition).then((svgCode : string) => {
-
-                    sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode); 
-                });
+                        console.log(diagramDefinition)
+                        console.log(svgCode)
+    
+                        await sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode); 
+                    //});
+                };
                 
             } else {
                 console.log('null')
@@ -121,6 +131,8 @@ async function matrixLogin() {
 
 checkForAccessToken().then(matrixLogin).then((value: (SimpleFsStorageProvider | RustSdkCryptoStorageProvider | MatrixClient)[]) => {
 
+}).catch((err) => {
+    console.error(err);
 });
 
 

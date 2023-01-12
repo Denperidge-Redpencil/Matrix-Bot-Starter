@@ -4,8 +4,8 @@ Mermaid.js doesn't render automatically in Matrix. Lets fix that!
 When a message contains a mermaid code block, the bot will return that very diagram.
 
 Functionality:
-- On new message, render the diagram(s) to svg.
-- Render multiple diagrams from one message. (TODO)
+- On new message, render the diagram(s) to svg/png.
+- Render multiple diagrams from one message.-
 - When a message with a rendering attached to it gets edited, re-render. (TODO)
 
 ## Installing
