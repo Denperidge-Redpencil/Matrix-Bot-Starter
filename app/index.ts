@@ -22,10 +22,10 @@ async function checkForAccessToken() {
         //env = env.replace('')
         */
         // Based on https://github.com/turt2live/matrix-bot-sdk/blob/13ce618976446ac4c8d325acf7aab80a9f5e8d2c/examples/login_register.ts
-        let auth = await new MatrixAuth(homeserverUrl).passwordLogin(getFromEnv('USERNAME'), getFromEnv('PASSWORD'));
+        let auth = await new MatrixAuth(homeserverUrl).passwordLogin(getFromEnv('LOGINNAME'), getFromEnv('PASSWORD'));
         let data = readFileSync('.env', { encoding: 'utf-8' });
         data += `\nACCESS_TOKEN="${auth.accessToken}"`;
-        data = data.replace(/USERNAME=.*(\n|)/gi, '').replace(/PASSWORD=.*(\n|)/gi, '');
+        data = data.replace(/LOGINNAME=.*(\n|)/gi, '').replace(/PASSWORD=.*(\n|)/gi, '');
         writeFileSync('.env', data, {
             encoding: 'utf-8'
         });
