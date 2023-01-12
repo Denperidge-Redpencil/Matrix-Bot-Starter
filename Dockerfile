@@ -14,7 +14,7 @@ COPY app/ .
 COPY build/ .
 COPY package*.json ./
 COPY tsconfig.json .
-COPY .env.docker .
+COPY .env.docker .env
 # 
 #COPY crypto/ .
 #COPY bot.json .
