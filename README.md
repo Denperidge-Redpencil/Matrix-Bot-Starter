@@ -13,6 +13,8 @@ When a message contains a mermaid code block, this bot will return that very dia
 
 <img src="assets/Screenshot.png" clear="left" alt="A screenshot of Mermatrix in action" />
 
+&nbsp;&nbsp;
+
 Functionality:
 - On a new message containing a diagram definition, render the diagram(s).
 - Render multiple diagrams from one message.
