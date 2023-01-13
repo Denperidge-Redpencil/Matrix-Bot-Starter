@@ -25,7 +25,18 @@ Afterwards, it will automatically detect and parse mermaid code blocks! Example
 - Clone the repository.
 - Get an access token for your bot user (see [t2bot.io/docs/access_tokens/](https://t2bot.io/docs/access_tokens/)).
 - Rename .env.example to .env and change the values.
-- Run `npm install` & `npm start`.
+- Run `npm install && npm build`.
+
+
+|    npm run   |                   function                 |
+| ------------ | ------------------------------------------ |
+| start        | Run build/index.js                         |
+| dev          | Run & watch app/index.ts                   |
+| build        | Build app/ into build/                     |
+| start-docker | Run the Dockerfile                         |
+| dev-docker   | Build & run the Dockerfile                 |
+| build-docker | Copy .env to .env.docker & build the image |
+
 
 ## Quirks
 ### SVG with a PNG preview
