@@ -32,6 +32,15 @@ Afterwards, it will automatically detect and parse mermaid code blocks! Example
 
 **Tip:** Add `.png` or `.svg` after `mermaid` in the code block to select the desired output format!
 
+There are also some commands you can use when @mentioning the bot!
+
+| command |                  function                   |
+| ------- | ------------------------------------------- |
+| avatar  | Change the avatar of the bot account.       |
+| name    | Change the display name of the bot account. |
+
+You don't have to call them with any parameters!
+After calling one of these commands, the next message you send will be used as input.
 
 ## Installing
 - Clone the repository.
