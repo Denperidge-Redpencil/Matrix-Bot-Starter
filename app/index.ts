@@ -20,14 +20,22 @@ const homeserverUrl = getFromEnv('HOMESERVER_URL');
 
 let self : string;
 const regexMermaid = new RegExp('```mermaid(.*?|\n)*?```', 'gmi');
-let renderedDiagrams : Array<RenderedDiagram> = []
+let regexSelfMention : RegExp;
+let renderedDiagrams : Array<RenderedDiagram> = [];
+
+interface AwaitMessageFrom {
+    description: string,
+    messageType: string,
+    functionToExecute: (client: MatrixClient, roomId: string, event: any) => Promise<void>
+}
+let multiMessageCommand : {[key: string] : AwaitMessageFrom} = {}
 
 
 
 async function checkForAccessToken() {
     if (getFromEnv('PASSWORD', true) != '') {
         console.log("Deteced password. Generating access_token...");
-    
+        
         /*
         let env = readFileSync('.env', {
             encoding: 'utf-8'
@@ -53,10 +61,11 @@ async function matrixLogin() {
     const client = new MatrixClient(homeserverUrl, getFromEnv('ACCESS_TOKEN'), storage, crypto);
 
     self = await client.getUserId();
+    let selfEscaped = self.replace(/\./g, '\\.');
+    regexSelfMention = new RegExp(`<a href=".*?${selfEscaped}">[:]?`, 'g');
     AutojoinRoomsMixin.setupOnClient(client);
     await client.crypto.prepare(await client.getJoinedRooms());
     await client.start();
-
 
     console.log('Client started!');
     console.log(`Logged in as ${self} on ${homeserverUrl}`);
@@ -71,11 +80,59 @@ async function setupCommands(client : MatrixClient) {
         const sender = event['sender'];
         if (sender == self) return;  // If message is from this bot, skip
         
-        
-        const body = event['content']['body'];
+        const content = event['content'];
+        const body = content['body'];
         let requestEventId = event['event_id']//.replace('\n', '');
 
-        let isEdit = 'm.new_content' in event.content;
+        console.log(event);
+
+        // Multi message command handling
+        if (sender in multiMessageCommand) {
+            let secondMessage : AwaitMessageFrom = multiMessageCommand[sender];
+            if (secondMessage.messageType != content['msgtype']) {
+                client.replyNotice(roomId, event, `Incorrect message type! Cancelling ${secondMessage.description}`);
+            }
+            else {
+                secondMessage.functionToExecute(client, roomId, event);
+            }
+            delete multiMessageCommand[sender];
+        }
+        const isEdit = 'm.new_content' in event.content;
+
+        // Mentions are HTML
+        // Example: formatted_body: '<a href="https://matrix.to/#/@example:example.org">example</a>: test'
+        if ('formatted_body' in content) {
+            let formatted_body : string = content['formatted_body'];
+            // If the bot is mentioned
+            let mention = formatted_body.match(regexSelfMention)
+            if (mention != null) {
+                let command = formatted_body.replace(mention[0], '').toLowerCase();
+
+                // If the sender is allowed to kick, they're allowed to manage the bot
+                let allowedToManageBot = await client.userHasPowerLevelFor(event['sender'], roomId, 'kick', true);
+
+                if (command.includes('picture') || command.includes('avatar')) {
+                    if (!allowedToManageBot) {
+                        client.replyNotice(roomId, event, 'My apologies! You need to have the \'kick\' permission to change my settings.');
+                        return;
+                    }
+                    multiMessageCommand[sender] = {
+                        description: 'avatar change',
+                        messageType: 'm.image',
+                        functionToExecute: changeAvatar
+                    };
+                    client.replyNotice(roomId, event, 'Setting new avatar! If your next message is an image, I will update my avatar to that.');
+
+                }
+            }
+        }
+
+        /*
+        if (content.msgtype == 'm.image') {
+
+        }
+        console.log(await client.userHasPowerLevelFor(event['sender'], roomId, 'kick', true));
+        */
 
         mermaidInfoFromText(body).then((info) => {
             if (info == null) return;
@@ -298,4 +355,13 @@ interface ImageMessageInfo {
     h?: number,
     thumbnail_file?: {},
     thumbnail_info?: ImageMessageInfo,
+}
+
+
+async function changeAvatar(client: MatrixClient, roomId : string, event : any) {
+    client.setAvatarUrl(event.content.url).then(() => {
+        client.replyNotice(roomId, event, 'Avatar updated!')
+    });
+    
+
 }
