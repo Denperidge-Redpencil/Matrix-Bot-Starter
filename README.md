@@ -30,7 +30,7 @@ Afterwards, it will automatically detect and parse mermaid code blocks! Example
         A -->|Label| B
     ```
 
-**Tip:** Add `.png` or `.svg` after `mermaid` in the code block to select the desired output format!
+**Tip:** Add `.png`, `.svg`, `...` after `mermaid` in the code block to select the desired output format!
 
 There are also some commands you can use when @mentioning the bot!
 

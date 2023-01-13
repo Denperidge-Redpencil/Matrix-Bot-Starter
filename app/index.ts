@@ -199,7 +199,10 @@ async function setupCommands(client : MatrixClient) {
                 const extension = params[2];
 
                 renderMermaid(diagramDefinition).then(async (svgCode : string) => {
-                    sendImage(client, roomId, 'mermaid', extension, mimetype, svgCode).then((eventId) => {
+                    sendImage(client, roomId, event, 'mermaid', extension, mimetype, svgCode).then((eventId : string | null) => {
+                        if (eventId == null) {
+                            return;
+                        } 
                         renderedDiagrams.push({ 
                             requestEventId: event['event_id'],
                             answerEventId: eventId
@@ -284,15 +287,26 @@ async function renderMermaid(diagramDefinition : string) : Promise<string> {
  * @param filestream 
  * @param mimetype image/svg+xml 
  */
-async function sendImage(client : MatrixClient, roomId : string, filename: string, extension: string, mimetype: string, filestring : string, requestEventId? : string) {
+async function sendImage(client : MatrixClient, roomId : string, event: any, filename: string, extension: string, mimetype: string, filestring : string, requestEventId? : string) {
     let isSvg = mimetype.includes('svg');
 
     // Sharp will be used to:
     // - Determine width, height and size (all image types)
     // - Create a buffer (if not SVG)
 
-    let sharpImage : sharp.Sharp = sharp(Buffer.from(filestring)).toFormat(formats[extension]);
-    let buffer = isSvg ? Buffer.from(filestring) : await sharpImage.toBuffer();
+    let sharpImage : sharp.Sharp;
+    let buffer: Buffer;
+
+    try { 
+        sharpImage = sharp(Buffer.from(filestring)).toFormat(formats[extension]);
+        buffer = isSvg ? Buffer.from(filestring) : await sharpImage.toBuffer();
+    } catch (err : any) {
+        if (err) { 
+            client.replyText(roomId, event, Object(err).toString());
+        }
+        return null;
+    }
+    
     let sizeData = await sharpImage.metadata();
     
     const encrypted = await client.crypto.encryptMedia(buffer);
