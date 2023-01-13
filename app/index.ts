@@ -23,6 +23,8 @@ const regexMermaid = new RegExp('```mermaid(.*?|\n)*?```', 'gmi');
 let regexSelfMention : RegExp;
 let renderedDiagrams : Array<RenderedDiagram> = [];
 
+function LogError(err: any) {console.log(err);};
+
 interface AwaitMessageFrom {
     description: string,
     messageType: string,
@@ -166,7 +168,7 @@ async function setupCommands(client : MatrixClient) {
                     .map((render : RenderedDiagram) => render.answerEventId);
 
                 oldDiagramEventIds.forEach((eventId : string) => {
-                    client.redactEvent(roomId, eventId, `The ${diagramOrDiagrams} prompt has been edited.`);
+                    client.redactEvent(roomId, eventId, `The ${diagramOrDiagrams} prompt has been edited.`).catch(LogError);
                 })
             }
 
@@ -331,7 +333,11 @@ async function sendImage(client : MatrixClient, roomId : string, filename: strin
     }
     console.log("thumbnailset")
 
-    return client.sendMessage(roomId, message);
+    let messageSend = client.sendMessage(roomId, message);
+    
+    messageSend.catch(LogError);
+
+    return messageSend;
 }
 
 interface ImageMessage {
