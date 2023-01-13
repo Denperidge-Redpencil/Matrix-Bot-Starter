@@ -28,7 +28,7 @@ interface AwaitMessageFrom {
     messageType: string,
     functionToExecute: (client: MatrixClient, roomId: string, event: any) => Promise<void> | void
 }
-let multiMessageCommand : {[key: string] : AwaitMessageFrom} = {}
+let multiMessageCommandQueue : {[key: string] : AwaitMessageFrom} = {}
 
 async function handleMultiMessageCommand(client: MatrixClient, roomId: string, event: any, senderId: string, test: boolean, requiresManagePermission : boolean, awaitMessageFrom: AwaitMessageFrom, notice: string) {
     if (!test) {
@@ -44,7 +44,7 @@ async function handleMultiMessageCommand(client: MatrixClient, roomId: string, e
         }
     }
 
-    multiMessageCommand[senderId] = awaitMessageFrom;
+    multiMessageCommandQueue[senderId] = awaitMessageFrom;
 
     client.replyNotice(roomId, event, notice);
 }
@@ -100,26 +100,28 @@ async function setupCommands(client : MatrixClient) {
         
         const content = event['content'];
         const body = content['body'];
-        let requestEventId = event['event_id']//.replace('\n', '');
+        let requestEventId = event['event_id'];
+
+        const isEdit = 'm.new_content' in content;
+        const isHtml = 'formatted_body' in content;
+        const multiMessageCommandToHandle = sender in multiMessageCommandQueue
 
         console.log(event);
 
-        // Multi message command handling
-        if (sender in multiMessageCommand) {
-            let secondMessage : AwaitMessageFrom = multiMessageCommand[sender];
-            if (secondMessage.messageType != content['msgtype']) {
-                client.replyNotice(roomId, event, `Incorrect message type! Cancelling ${secondMessage.description}`);
+        if (multiMessageCommandToHandle) {
+            let multiMessageCommand : AwaitMessageFrom = multiMessageCommandQueue[sender];
+            if (multiMessageCommand.messageType != content['msgtype']) {
+                client.replyNotice(roomId, event, `Incorrect message type! Cancelling ${multiMessageCommand.description}`);
             }
             else {
-                secondMessage.functionToExecute(client, roomId, event);
+                multiMessageCommand.functionToExecute(client, roomId, event);
             }
-            delete multiMessageCommand[sender];
+            delete multiMessageCommandQueue[sender];
         }
-        const isEdit = 'm.new_content' in event.content;
 
         // Mentions are HTML
         // Example: formatted_body: '<a href="https://matrix.to/#/@example:example.org">example</a>: test'
-        if ('formatted_body' in content) {
+        if (isHtml) {
             let formatted_body : string = content['formatted_body'];
             // If the bot is mentioned
             let mention = formatted_body.match(regexSelfMention)
@@ -148,38 +150,27 @@ async function setupCommands(client : MatrixClient) {
             }
         }
 
-        /*
-        if (content.msgtype == 'm.image') {
+        mermaidInfoFromText(body).then((diagramDefinitions) => {
+            if (diagramDefinitions == null) return;
 
-        }
-        console.log(await client.userHasPowerLevelFor(event['sender'], roomId, 'kick', true));
-        */
-
-        mermaidInfoFromText(body).then((info) => {
-            if (info == null) return;
-
-            let diagramOrDiagrams = info.length > 1 ? 'diagrams' : 'diagram';
+            let diagramOrDiagrams = diagramDefinitions.length > 1 ? 'diagrams' : 'diagram';
             let renderingOrRerendering = isEdit ? 'Re-rendering' : 'Rendering';
-            let replyToEvent = event;
-            // Message edit
+
+            // If the definition isn't new but edited, redact the previous renderings
             if (isEdit) {
-                console.log(event)
                 // In this case, event['event_id'] refers to the edit event itself, not to the message that is being edited
                 requestEventId = event.content['m.relates_to'].event_id;
-                //replyToEvent = 
-    
-                
-                console.log('req: ' + requestEventId)
 
-                let oldDiagrams : Array<string> = renderedDiagrams
+                let oldDiagramEventIds : Array<string> = renderedDiagrams
                     .filter((render : RenderedDiagram) => render.requestEventId == event.content['m.relates_to'].event_id)
                     .map((render : RenderedDiagram) => render.answerEventId);
 
-                oldDiagrams.forEach((eventId : string) => {
+                oldDiagramEventIds.forEach((eventId : string) => {
                     client.redactEvent(roomId, eventId, `The ${diagramOrDiagrams} prompt has been edited.`);
                 })
             }
 
+            // Reply to the definition with a notice that there's rendering going on
             client.sendMessage(roomId, {
                 'msgtype': 'm.notice',
                 'body': `${renderingOrRerendering} ${diagramOrDiagrams}...`,
@@ -190,19 +181,13 @@ async function setupCommands(client : MatrixClient) {
                 }
             })
 
-            //client.replyNotice(roomId, replyToEvent, `${renderingOrRerendering} ${diagramOrDiagrams}...`).then((eventId : string) => {
-                //console.log("notice: " + eventId);
-            //});
-
-            
-
-
-            for (let i=0; i < info.length; i++) {
-                const params = info[i];
+            // For every diagram definition, render & send
+            for (let i=0; i < diagramDefinitions.length; i++) {
+                const params = diagramDefinitions[i];
 
                 const diagramDefinition = params[0];
-                const extension = params[2];
                 const mimetype = params[1];
+                const extension = params[2];
 
                 renderMermaid(diagramDefinition).then(async (svgCode : string) => {
                     sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode).then((eventId) => {
@@ -214,12 +199,6 @@ async function setupCommands(client : MatrixClient) {
                 });
             }
         });
-
-        
-
-    
-        // regexMermaid.exec is not the same as match!
-        
     });
 
 }
