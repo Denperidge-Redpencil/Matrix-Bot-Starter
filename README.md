@@ -1,7 +1,14 @@
 # Mermatrix
 
-Mermaid.js doesn't render automatically in Matrix. Lets fix that!
-When a message contains a mermaid code block, the bot will return that very diagram.
+<img src="assets/mermatrix.png" style="width:100px;height: 100px; float:left; margin: 20px;">
+
+<span>
+    <br><br>
+    Mermaid.js doesn't render automatically in Matrix. Lets fix that!
+    When a message contains a mermaid code block, this bot will return that very diagram.
+</span>
+
+<img src="assets/Screenshot.png" alt="A screenshot of Mermatrix in action" style="clear:left; margin-top: 20px;">
 
 Functionality:
 - On a new message containing a diagram definition, render the diagram(s).
