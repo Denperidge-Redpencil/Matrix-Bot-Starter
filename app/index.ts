@@ -26,10 +26,28 @@ let renderedDiagrams : Array<RenderedDiagram> = [];
 interface AwaitMessageFrom {
     description: string,
     messageType: string,
-    functionToExecute: (client: MatrixClient, roomId: string, event: any) => Promise<void>
+    functionToExecute: (client: MatrixClient, roomId: string, event: any) => Promise<void> | void
 }
 let multiMessageCommand : {[key: string] : AwaitMessageFrom} = {}
 
+async function handleMultiMessageCommand(client: MatrixClient, roomId: string, event: any, senderId: string, test: boolean, requiresManagePermission : boolean, awaitMessageFrom: AwaitMessageFrom, notice: string) {
+    if (!test) {
+        return;
+    }
+
+    if (requiresManagePermission) {
+        // If the sender is allowed to kick, they're allowed to manage the bot
+        let allowedToManageBot = await client.userHasPowerLevelFor(event['sender'], roomId, 'kick', true);
+        if (!allowedToManageBot) {
+            client.replyNotice(roomId, event, 'My apologies! You need to have the \'kick\' permission to change my settings.');
+            return;
+        }
+    }
+
+    multiMessageCommand[senderId] = awaitMessageFrom;
+
+    client.replyNotice(roomId, event, notice);
+}
 
 
 async function checkForAccessToken() {
@@ -108,22 +126,25 @@ async function setupCommands(client : MatrixClient) {
             if (mention != null) {
                 let command = formatted_body.replace(mention[0], '').toLowerCase();
 
-                // If the sender is allowed to kick, they're allowed to manage the bot
-                let allowedToManageBot = await client.userHasPowerLevelFor(event['sender'], roomId, 'kick', true);
-
-                if (command.includes('picture') || command.includes('avatar')) {
-                    if (!allowedToManageBot) {
-                        client.replyNotice(roomId, event, 'My apologies! You need to have the \'kick\' permission to change my settings.');
-                        return;
-                    }
-                    multiMessageCommand[sender] = {
+                handleMultiMessageCommand(client, roomId, event, sender, 
+                    (command.includes('picture') || command.includes('avatar')), 
+                    true, 
+                    {
                         description: 'avatar change',
                         messageType: 'm.image',
                         functionToExecute: changeAvatar
-                    };
-                    client.replyNotice(roomId, event, 'Setting new avatar! If your next message is an image, I will update my avatar to that.');
-
-                }
+                    }, 
+                    'Setting new avatar! If your next message is an image, I will update my avatar to that.');
+                
+                handleMultiMessageCommand(client, roomId, event, sender, 
+                    (command.includes('name') || command.includes('handle')), 
+                    true, 
+                    {
+                        description: 'display name change',
+                        messageType: 'm.text',
+                        functionToExecute: changeDisplayname
+                    }, 
+                    'Setting new display name! I\'ll set it to the contents of your next message.');
             }
         }
 
@@ -362,6 +383,11 @@ async function changeAvatar(client: MatrixClient, roomId : string, event : any) 
     client.setAvatarUrl(event.content.url).then(() => {
         client.replyNotice(roomId, event, 'Avatar updated!')
     });
-    
+}
 
+async function changeDisplayname(client: MatrixClient, roomId: string, event: any) {
+    client.setDisplayName(event.content.body).then(() => {
+        client.replyNotice(roomId, event, 'Updated display name!')
+    });
+    
 }
