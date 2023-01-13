@@ -19,6 +19,7 @@ interface RenderedDiagram {
 const homeserverUrl = getFromEnv('HOMESERVER_URL');
 
 let self : string;
+let formats : { [key: string]: sharp.AvailableFormatInfo };
 const regexMermaid = new RegExp('```mermaid(.*?|\n)*?```', 'gmi');
 let regexSelfMention : RegExp;
 let renderedDiagrams : Array<RenderedDiagram> = [];
@@ -89,6 +90,12 @@ async function matrixLogin() {
 
     console.log('Client started!');
     console.log(`Logged in as ${self} on ${homeserverUrl}`);
+
+    formats = {};
+    Object.values(sharp.format).forEach((format: sharp.AvailableFormatInfo) => {
+        formats[format.id] = format;
+    })
+    console.log(formats)
 
     return client;
 }
@@ -192,7 +199,7 @@ async function setupCommands(client : MatrixClient) {
                 const extension = params[2];
 
                 renderMermaid(diagramDefinition).then(async (svgCode : string) => {
-                    sendImage(client, roomId, 'mermaid.' + extension, mimetype, svgCode).then((eventId) => {
+                    sendImage(client, roomId, 'mermaid', extension, mimetype, svgCode).then((eventId) => {
                         renderedDiagrams.push({ 
                             requestEventId: event['event_id'],
                             answerEventId: eventId
@@ -277,13 +284,14 @@ async function renderMermaid(diagramDefinition : string) : Promise<string> {
  * @param filestream 
  * @param mimetype image/svg+xml 
  */
-async function sendImage(client : MatrixClient, roomId : string, filename: string, mimetype: string, filestring : string, requestEventId? : string) {
+async function sendImage(client : MatrixClient, roomId : string, filename: string, extension: string, mimetype: string, filestring : string, requestEventId? : string) {
     let isSvg = mimetype.includes('svg');
 
     // Sharp will be used to:
     // - Determine width, height and size (all image types)
     // - Create a buffer (if not SVG)
-    let sharpImage : sharp.Sharp = sharp(Buffer.from(filestring))
+
+    let sharpImage : sharp.Sharp = sharp(Buffer.from(filestring)).toFormat(formats[extension]);
     let buffer = isSvg ? Buffer.from(filestring) : await sharpImage.toBuffer();
     let sizeData = await sharpImage.metadata();
     
@@ -292,7 +300,7 @@ async function sendImage(client : MatrixClient, roomId : string, filename: strin
 
     let message : ImageMessage = {
         msgtype: 'm.image',
-        body: filename,
+        body: filename + '.' + extension,
         info : {
             mimetype: mimetype,
             //size: sizeData.size,
