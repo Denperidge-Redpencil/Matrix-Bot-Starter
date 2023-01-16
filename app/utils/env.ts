@@ -11,7 +11,7 @@ export function loadConfig() : void {
  * Get an environment variable, exiting 
  * 
  * @param name - The name of the environment variable
- * @param {boolean} [false] allowEmpty - When set to true, overrides the exit behaviour, instead returning an empty string if undefined
+ * @param {boolean} [allowEmpty=false] - When set to true, overrides the exit behaviour, instead returning an empty string if undefined
  * @returns {string} The value of the environment variable
  */
 export function getFromEnv(name : string, allowEmpty : boolean=false) : string {
