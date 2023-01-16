@@ -1,7 +1,7 @@
 import { MatrixClient } from 'matrix-bot-sdk';
 
 import './utils/globals';
-import { startClient, onMessage } from './utils/client-setup';
+import { generateAndStartClient, onMessage } from './utils/client-setup';
 import { handleMultiMessageCommand } from './utils/multimessagecommand';
 import { changeAvatar, changeDisplayname } from './commands/customise';
 import { handleMermaidCodeblocks } from './commands/mermaid';
@@ -46,6 +46,6 @@ async function onEvents(client : MatrixClient) {
 
 }
 
-startClient().then((client : MatrixClient) => {
+generateAndStartClient().then((client : MatrixClient) => {
     onEvents(client);
 });
