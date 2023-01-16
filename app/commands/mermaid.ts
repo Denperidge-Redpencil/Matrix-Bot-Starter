@@ -111,7 +111,7 @@ export async function handleMermaidCodeblocks(client: MatrixClient, roomId: stri
             const extension = params[2];
 
             renderMermaid(diagramDefinition).then(async (svgCode : string) => {
-                sendImage(client, roomId, event, 'mermaid', extension, mimetype, svgCode).then((eventId : string | null) => {
+                sendImage(client, roomId, 'mermaid', extension, mimetype, svgCode).then((eventId : string | null) => {
                     if (eventId == null) {
                         return;
                     } 
