@@ -1,29 +1,16 @@
 import {MatrixClient} from 'matrix-bot-sdk';
 
 import './utils/globals';
-import { startClient } from './utils/client-setup';
+import { startClient, onMessage } from './utils/client-setup';
 import { changeAvatar, changeDisplayname } from './commands/customise';
 import { handleMermaidCodeblocks } from './commands/mermaid';
-import { handleMultiMessageCommand, runMultiMessageCommand } from './utils/multimessagecommand';
+import { handleMultiMessageCommand } from './utils/multimessagecommand';
 
 
 async function onEvents(client : MatrixClient) {
-    client.on('room.message', async (roomId, event) => {
-        if (!event['content']) return;  // If no content, skip
+    onMessage(client, 
+        async (roomId, event, sender, content, body, requestEventId, isEdit, isHtml) => {
         
-        const sender = event['sender'];
-        if (sender == clientId) return;  // If message is from this bot, skip
-        
-        const content = event['content'];
-        const body = content['body'];
-        let requestEventId = event['event_id'];
-
-        const isEdit = 'm.new_content' in content;
-        const isHtml = 'formatted_body' in content;
-
-        runMultiMessageCommand(client, roomId, event, content, sender);
-        
-
         // Mentions are HTML
         // Example: formatted_body: '<a href="https://matrix.to/#/@example:example.org">example</a>: test'
         if (isHtml) {

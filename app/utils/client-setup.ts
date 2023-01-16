@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from 'fs';
 
 import { getFromEnv, loadConfig } from './env';
 import './globals';
+import { runMultiMessageCommand } from './multimessagecommand';
 
 import {MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider, SimpleFsStorageProvider, AutojoinRoomsMixin} from 'matrix-bot-sdk';
 
@@ -45,7 +46,6 @@ async function matrixLogin() {
     console.log('Client started!');
     console.log(`Logged in as ${clientId} on ${homeserverUrl}`);
 
-
     return client;
 }
 
@@ -57,3 +57,24 @@ export function startClient() {
     return startPromise;
 }
 
+export function onMessage(client: MatrixClient, 
+    callback : (roomId: string, event: any, sender: string, content: any,
+                body: any, requestEventId: string, isEdit: boolean, isHtml: boolean ) => {}) {
+    client.on('room.message', async (roomId, event) => { 
+        if (!event['content']) return;  // If no content, skip
+        
+        const sender = event['sender'];
+        if (sender == clientId) return;  // If message is from this bot, skip
+        
+        const content = event['content'];
+        const body = content['body'];
+        let requestEventId = event['event_id'];
+
+        const isEdit = 'm.new_content' in content;
+        const isHtml = 'formatted_body' in content;
+
+        runMultiMessageCommand(client, roomId, event, content, sender);
+
+        callback(roomId, event, sender, content, body, requestEventId, isEdit, isHtml);
+    });
+}
