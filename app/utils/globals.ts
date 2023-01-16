@@ -1,4 +1,4 @@
-import { getFromEnv, loadConfig } from './env';
+export {};  // Declare file as module
 
 declare global {
     // Only works with var, not with let/const
@@ -6,5 +6,3 @@ declare global {
     var clientId: string;
     var regexSelfMention: RegExp;
 }
-
-
