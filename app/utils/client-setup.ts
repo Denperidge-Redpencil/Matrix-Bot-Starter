@@ -1,10 +1,11 @@
 import { readFileSync, writeFileSync } from 'fs';
 
-import { getFromEnv, loadConfig } from './env';
+import { MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider, SimpleFsStorageProvider, AutojoinRoomsMixin } from 'matrix-bot-sdk';
+
 import './globals';
+import { getFromEnv, loadConfig } from './env';
 import { runMultiMessageCommand } from './multimessagecommand';
 
-import {MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider, SimpleFsStorageProvider, AutojoinRoomsMixin} from 'matrix-bot-sdk';
 
 globalThis.homeserverUrl = getFromEnv('HOMESERVER_URL');
 

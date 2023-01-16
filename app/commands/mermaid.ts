@@ -1,5 +1,5 @@
-import mermaid from 'headless-mermaid';
 import { MatrixClient } from 'matrix-bot-sdk';
+import mermaid from 'headless-mermaid';
 
 import sendImage  from '../utils/sendImage';
 import LogError from '../utils/logerror';

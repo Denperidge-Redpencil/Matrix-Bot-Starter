@@ -1,10 +1,10 @@
-import {MatrixClient} from 'matrix-bot-sdk';
+import { MatrixClient } from 'matrix-bot-sdk';
 
 import './utils/globals';
 import { startClient, onMessage } from './utils/client-setup';
+import { handleMultiMessageCommand } from './utils/multimessagecommand';
 import { changeAvatar, changeDisplayname } from './commands/customise';
 import { handleMermaidCodeblocks } from './commands/mermaid';
-import { handleMultiMessageCommand } from './utils/multimessagecommand';
 
 
 async function onEvents(client : MatrixClient) {
