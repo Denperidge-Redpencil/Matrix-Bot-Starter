@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES6", "DOM"],
+    "target": "ES6",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "module": "commonjs",                                /* Specify what module code is generated. */
+    "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. */
+    "outDir": "../lib/cjs",                                   /* Specify an output folder for all emitted files. */
+    "declarationDir": "../lib/cjs/types",                           /* Specify the output directory for generated declaration files. */
+
+  }
+}

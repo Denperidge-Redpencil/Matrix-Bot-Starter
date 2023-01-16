@@ -31,7 +31,7 @@ let multiMessageCommandQueue : {[senderId: string] : AwaitMessageFrom} = {}
  * @param {string} notice - Notice message to send when the first part of the command is issued 
  * @returns 
  */
-export async function handleMultiMessageCommand(client: MatrixClient, roomId: string, event: any, test: boolean, requiresManagePermission : boolean, awaitMessageFrom: AwaitMessageFrom, notice: string) {
+export async function multiMessageCommandSetup(client: MatrixClient, roomId: string, event: any, test: boolean, requiresManagePermission : boolean, awaitMessageFrom: AwaitMessageFrom, notice: string) {
     if (!test) {
         return;
     }
@@ -63,7 +63,7 @@ export async function handleMultiMessageCommand(client: MatrixClient, roomId: st
  * @param content - The content of the event
  * @param sender - The sender of the event
  */
-export function runMultiMessageCommand(client: MatrixClient, roomId: string, event: any, content: any, sender: string) {
+export function multiMessageCommandHandle(client: MatrixClient, roomId: string, event: any, content: any, sender: string) {
     const multiMessageCommandToHandle = sender in multiMessageCommandQueue;
 
     if (multiMessageCommandToHandle) {

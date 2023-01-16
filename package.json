@@ -1,24 +1,45 @@
 {
-  "name": "matrix-botlerplate",
+  "name": "matrix-catbot",
   "version": "1.0.0",
-  "description": "A simple but powerful starter for building a Matrix bot using matrix-bot-sdk",
-  "main": "app/index.ts",
-  "devDependencies": {
-    "@types/sharp": "^0.31.1",
+  "description": "Powerful helper functions and utils for building a Matrix bot using matrix-bot-sdk",
+  "main": "./lib/cjs/types/index.d.ts",
+  "types": "./lib/cjs/index.js",
+  "files": [
+    "lib/**/*"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/esm/types/index.d.ts",
+        "default": "./lib/esm/index.mjs"
+      },
+      "require": {
+        "types": "./lib/cjs/types/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      }
+    }
+  },
+  "dependencies": {
     "dotenv": "^16.0.3",
     "matrix-bot-sdk": "^0.6.3",
-    "sharp": "^0.31.3",
-    "ts-node-dev": "^2.0.0",
+    "sharp": "^0.31.3"
+  },
+  "devDependencies": {
+    "@types/sharp": "^0.31.1",
     "typescript": "^4.9.4"
   },
   "scripts": {
-    "start": "node build/index.js",
-    "dev": "npx ts-node-dev --files app/index.ts",
-    "build": "npx tsc",
-    "start-docker": "docker run --userns=host --network=\"host\" mermatrix",
-    "dev-docker": "npm run build-docker && npm run start-docker",
-    "build-docker": "cp -n .env .env.docker && docker build -t mermatrix ."
+    "clean": "rm -rf ./lib",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs",
+    "build:esm": "npx tsc -p ./configs/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
+    "build:cjs": "npx tsc -p ./configs/tsconfig.cjs.json",
+    "prepare": "npm run build"
   },
+  "keywords": [
+    "Matrix",
+    "matrix-bot-sdk",
+    "typescript"
+  ],
   "author": "Denperidge",
   "license": "MIT"
 }

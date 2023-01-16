@@ -8,7 +8,7 @@
  * @example promise.then(() => {...}).catch(LogError);
  * 
  */
-export default function LogError(err: any) {
+export default function logError(err: any) {
     console.log(err);
 };
 

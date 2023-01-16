@@ -26,5 +26,3 @@ export function getFromEnv(name : string, allowEmpty : boolean=false) : string {
     }
 }
 
-// Load .env file
-loadConfig();

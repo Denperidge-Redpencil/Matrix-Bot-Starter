@@ -1,7 +1,7 @@
-import { MatrixClient, MessageEventContent } from "matrix-bot-sdk";
+import { MatrixClient } from "matrix-bot-sdk";
 import sharp from 'sharp';
 
-import LogError from '../utils/logerror';
+import LogError from '../utils/logError';
 
 /**
  * Dynamically creates an object/dictionary for sharp.format.*
