@@ -9,16 +9,14 @@ import { handleMermaidCodeblocks } from './commands/mermaid';
 
 async function onEvents(client : MatrixClient) {
     onMessage(client, 
-        async (roomId, event, sender, content, body, requestEventId, isEdit, isHtml) => {
+        async (roomId, event, sender, content, body, requestEventId, isEdit, isHtml, mentioned) => {
         
         // Mentions are HTML
         // Example: formatted_body: '<a href="https://matrix.to/#/@example:example.org">example</a>: test'
         if (isHtml) {
-            let formatted_body : string = content['formatted_body'];
             // If the bot is mentioned
-            let mention = formatted_body.match(regexSelfMention)
-            if (mention != null) {
-                let command = formatted_body.replace(mention[0], '').toLowerCase();
+            if (mentioned) {
+                let command = mentioned.toLowerCase();
 
                 handleMultiMessageCommand(client, roomId, event, sender, 
                     (command.includes('picture') || command.includes('avatar')), 

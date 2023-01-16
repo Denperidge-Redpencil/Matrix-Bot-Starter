@@ -60,7 +60,7 @@ export function startClient() {
 
 export function onMessage(client: MatrixClient, 
     callback : (roomId: string, event: any, sender: string, content: any,
-                body: any, requestEventId: string, isEdit: boolean, isHtml: boolean ) => {}) {
+                body: any, requestEventId: string, isEdit: boolean, isHtml: boolean, mentioned: string ) => {}) {
     client.on('room.message', async (roomId, event) => { 
         if (!event['content']) return;  // If no content, skip
         
@@ -74,8 +74,17 @@ export function onMessage(client: MatrixClient,
         const isEdit = 'm.new_content' in content;
         const isHtml = 'formatted_body' in content;
 
+        let mentioned = '';
+        if (isHtml) {
+            const formatted_body = content['formatted_body'];
+            const mentionString = formatted_body.match(regexSelfMention);
+            if (mentionString != null) {
+                mentioned = formatted_body.replace(mentionString, '');
+            }
+        }
+
         runMultiMessageCommand(client, roomId, event, content, sender);
 
-        callback(roomId, event, sender, content, body, requestEventId, isEdit, isHtml);
+        callback(roomId, event, sender, content, body, requestEventId, isEdit, isHtml, mentioned);
     });
 }
