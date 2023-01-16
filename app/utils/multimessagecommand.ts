@@ -22,7 +22,7 @@ let multiMessageCommandQueue : {[senderId: string] : AwaitMessageFrom} = {}
  * A function that will allow creating a command that awaits additional input from the user of a specific type
  * Optionally allowing the command to be locked for people without a certain amount of permissions
  * 
- * @param {MatrixClient} client - The bot client, generated from @see startClient
+ * @param {MatrixClient} client - The bot client, generated from @see generateAndStartClient
  * @param {string} roomId - The id of the room to send the message in
  * @param {any} event - The event object returned by on.message/sendmessage
  * @param {boolean} test - A boolean on whether the command should be execcuted. @example (command.includes('name') || command.includes('handle')) 
@@ -57,7 +57,7 @@ export async function handleMultiMessageCommand(client: MatrixClient, roomId: st
  * This gets called automatically if you use @see client-setup.onMessage
  * Otherwise, you can simply just run it on.message, with no additional setup needed
  * 
- * @param client - The bot client, generated from @see startClient
+ * @param client - The bot client, generated from @see generateAndStartClient
  * @param roomId - The id of the room to send the message in
  * @param event - The event object returned by on.message/sendmessage, that possibly contains the second part of a multi message command
  * @param content - The content of the event
