@@ -1,12 +1,11 @@
 import { readFileSync, writeFileSync } from 'fs';
 
 import { getFromEnv, loadConfig } from './utils/env';
-import 'globals';
+import './globals';
 
 import {MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider, SimpleFsStorageProvider, AutojoinRoomsMixin} from 'matrix-bot-sdk';
 
-let regexSelfMention : RegExp;
-homeserverUrl = getFromEnv('HOMESERVER_URL');
+globalThis.homeserverUrl = getFromEnv('HOMESERVER_URL');
 
 async function checkForAccessToken() {
     if (getFromEnv('PASSWORD', true) != '') {
@@ -36,9 +35,9 @@ async function matrixLogin() {
     const crypto = new RustSdkCryptoStorageProvider('./crypto');
     const client = new MatrixClient(homeserverUrl, getFromEnv('ACCESS_TOKEN'), storage, crypto);
 
-    clientId = await client.getUserId();
+    globalThis.clientId = await client.getUserId();
     let selfEscaped = clientId.replace(/\./g, '\\.');
-    regexSelfMention = new RegExp(`<a href=".*?${selfEscaped}">[:]?`, 'g');
+    globalThis.regexSelfMention = new RegExp(`<a href=".*?${selfEscaped}">[:]?`, 'g');
     AutojoinRoomsMixin.setupOnClient(client);
     await client.crypto.prepare(await client.getJoinedRooms());
     await client.start();

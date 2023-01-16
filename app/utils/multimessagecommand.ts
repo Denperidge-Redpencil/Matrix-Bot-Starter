@@ -26,7 +26,7 @@ export async function handleMultiMessageCommand(client: MatrixClient, roomId: st
     client.replyNotice(roomId, event, notice);
 }
 
-export function checkForMultiMessageCommand(client: MatrixClient, roomId: string, event: any, content: any, sender: string) {
+export function runMultiMessageCommand(client: MatrixClient, roomId: string, event: any, content: any, sender: string) {
     const multiMessageCommandToHandle = sender in multiMessageCommandQueue;
 
 

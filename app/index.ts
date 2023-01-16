@@ -1,8 +1,10 @@
 import {MatrixClient} from 'matrix-bot-sdk';
 
-import 'globals';
-import { changeAvatar, changeDisplayname } from 'commands/customise';
-import {checkForMultiMessageCommand as checkIfMessageIsForMultimessageCommand  } from 'utils/multimessagecommand';
+import './globals';
+import { startClient } from './client-setup';
+import { changeAvatar, changeDisplayname } from './commands/customise';
+import { handleMermaidCodeblocks } from './commands/mermaid';
+import { handleMultiMessageCommand, runMultiMessageCommand } from './utils/multimessagecommand';
 
 
 async function onEvents(client : MatrixClient) {
@@ -19,7 +21,7 @@ async function onEvents(client : MatrixClient) {
         const isEdit = 'm.new_content' in content;
         const isHtml = 'formatted_body' in content;
 
-        checkIfMessageIsForMultimessageCommand(client, roomId)
+        runMultiMessageCommand(client, roomId, event, content, sender);
         
 
         // Mentions are HTML
@@ -53,6 +55,12 @@ async function onEvents(client : MatrixClient) {
             }
         }
 
+        handleMermaidCodeblocks(client, roomId, requestEventId, event, body, isEdit);
+
     });
 
 }
+
+startClient().then((client : MatrixClient) => {
+    onEvents(client);
+});

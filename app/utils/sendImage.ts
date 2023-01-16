@@ -1,7 +1,7 @@
 import { MatrixClient } from "matrix-bot-sdk";
 import sharp from 'sharp';
 
-import LogError from 'utils/logerror';
+import LogError from '../utils/logerror';
 
 //import 'globals';
 

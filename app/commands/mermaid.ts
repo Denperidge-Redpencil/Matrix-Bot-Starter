@@ -1,8 +1,8 @@
 import mermaid from 'headless-mermaid';
 import { MatrixClient } from 'matrix-bot-sdk';
 
-import sendImage  from 'utils/sendImage';
-import LogError from 'utils/logerror';
+import sendImage  from '../utils/sendImage';
+import LogError from '../utils/logerror';
 
 interface RenderedDiagram {
     requestEventId: string,
@@ -69,7 +69,7 @@ async function renderMermaid(diagramDefinition : string) : Promise<string> {
     });
 }
 
-export async function mermaidCommand(client: MatrixClient, roomId: string, requestEventId: string, event: any, text: string, isEdit: boolean) {
+export async function handleMermaidCodeblocks(client: MatrixClient, roomId: string, requestEventId: string, event: any, text: string, isEdit: boolean) {
 
     mermaidInfoFromText(text).then((diagramDefinitions) => {
         if (diagramDefinitions == null) return;
