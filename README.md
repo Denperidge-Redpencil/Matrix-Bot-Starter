@@ -1,36 +1,29 @@
-# Mermatrix
+# Matrix-Botlierplate
 
 
 <span>
-<img src="assets/mermatrix.png" align="left" style="width:100px;height: 100px; margin: 20px;">
-<br>
+<img src="assets/matrix-botlerplate.png" align="left" style="width:100px;height: 100px; margin: 20px;">
+<br><br>
 
-Mermaid.js doesn't render automatically in Matrix. Lets fix that!
-When a message contains a mermaid code block, this bot will return that very diagram.
+A simple but powerful boilerplate, to help you when creating Matrix bots using the [matrix-bot-sdk](https://github.com/turt2live/matrix-bot-sdk).
 </span>
 
 &nbsp;&nbsp;&nbsp;
 
-<img src="assets/Screenshot.png" clear="left" alt="A screenshot of Mermatrix in action" />
+<img src="assets/Screenshot.png" clear="both" alt="A screenshot of the matrix-botlerplate in action" />
 
 &nbsp;
 
-Functionality:
-- On a new message containing a diagram definition, render the diagram(s).
-- Render multiple diagrams from one message.
-- When the original message gets edited in x amount of time, re-render.
-- Choose per diagram whether to render into svg or png.
+All of the following comes built-in:
+- Multi-message commands
+- Image sending with conversion to different formats
+- Handling environment variables
+- Generating an access token from username/password
+- onMessage, a client.on('room.message') replacement that lets the client automatically detect edits, when it is mentioned, not reply to its own messages, etc.
+- An example command that allows changing the bots display name & avatar from within the chat
 
-## Usage
-Once started, invite the bot to channels you wish to use it in.
-Afterwards, it will automatically detect and parse mermaid code blocks! Example
 
-    ```mermaid
-    graph TD
-        A -->|Label| B
-    ```
-
-**Tip:** Add `.png`, `.svg`, `...` after `mermaid` in the code block to select the desired output format!
+## Built-in example command
 
 There are also some commands you can use when @mentioning the bot!
 
@@ -92,17 +85,9 @@ As a workaround, a thumbnail/preview of the diagram gets rendered to PNG and att
 
 SVG's are really great. But also their implementation is weird. To give an example: Rocket.chat would preview SVG's on the desktop app and Chrome, but not on Firefox.
 
-### Flowcharts don't render text unless specific settings are set
-See the issue [here](https://github.com/mermaid-js/mermaid-cli/issues/112).
-
 ### USERNAME -> LOGINNAME
 It seems weird to use this synonym for username while matrix tends to go for "username". Well, it turns out there is an environment variable on Windows called %USERNAME%, thus giving errors when this was run on Windows. Loginname it is!
-
-#### Why remove the old images instead of replacing them?
-Oh don't think I didn't try (see the replace-diagrams branch)! It's either not possible in Matrix, or I goofed something.
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
 
-
-/help in profile section?

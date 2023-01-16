@@ -4,17 +4,13 @@ import './utils/globals';
 import { generateAndStartClient, onMessage } from './utils/client-setup';
 import { handleMultiMessageCommand } from './utils/multimessagecommand';
 import { changeAvatar, changeDisplayname } from './commands/customise';
-import { handleMermaidCodeblocks } from './commands/mermaid';
 
 
 async function onEvents(client : MatrixClient) {
     onMessage(client, 
         async (roomId, event, sender, content, body, requestEventId, isEdit, isHtml, mentioned) => {
         
-        // Mentions are HTML
-        // Example: formatted_body: '<a href="https://matrix.to/#/@example:example.org">example</a>: test'
         if (isHtml) {
-            // If the bot is mentioned
             if (mentioned) {
                 let command = mentioned.toLowerCase();
 
@@ -39,9 +35,6 @@ async function onEvents(client : MatrixClient) {
                     'Setting new display name! I\'ll set it to the contents of your next message.');
             }
         }
-
-        handleMermaidCodeblocks(client, roomId, requestEventId, event, body, isEdit);
-
     });
 
 }

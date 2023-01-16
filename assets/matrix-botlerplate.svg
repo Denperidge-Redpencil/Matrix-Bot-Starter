@@ -5,15 +5,20 @@
         <g id="Background" transform="matrix(1,0,0,1,5,5)">
             <circle cx="200" cy="200" r="200" style="fill:url(#_Linear1);"/>
         </g>
-        <g id="Mermaid" transform="matrix(0.97003,0,0,0.97003,6.14377,6.14375)">
-            <path id="svg_4" d="M320.442,109.817C269.336,107.63 222.41,139.074 204.999,187.172C187.588,139.074 140.662,107.63 89.557,109.817C87.854,150.371 107.255,189.043 140.781,211.924C157.961,223.723 168.227,243.295 168.17,264.136L168.17,300.29L241.836,300.29L241.836,264.136C241.776,243.296 252.04,223.724 269.218,211.924C302.753,189.052 322.156,150.373 320.442,109.817L320.442,109.817L320.442,109.817Z" style="fill:white;fill-rule:nonzero;stroke:rgb(73,190,170);stroke-opacity:0;stroke-width:1px;"/>
-        </g>
         <g id="Matrix">
             <path id="svg_8" d="M68.477,103.933L68.477,306.067L83.003,306.067L83.003,310.917L62.903,310.917L62.903,99.083L83.003,99.083L83.003,103.933L68.477,103.933Z" style="fill:white;fill-rule:nonzero;stroke:rgb(73,190,170);stroke-opacity:0;stroke-width:1px;"/>
             <path id="Path" d="M341.521,306.067L341.521,103.933L326.995,103.933L326.995,99.083L347.097,99.083L347.097,310.917L326.995,310.917L326.995,306.067L341.521,306.067Z" style="fill:white;fill-rule:nonzero;stroke:rgb(73,190,170);stroke-opacity:0;stroke-width:1px;"/>
         </g>
+        <g id="Plus">
+            <g transform="matrix(0.448842,0,0,1.24411,130.919,69.0702)">
+                <path d="M178.532,38.779L171.79,36.347L158.307,36.347L151.565,38.779L151.565,179.737L158.307,182.169L171.79,182.169L178.532,179.737L178.532,38.779Z" style="fill:white;"/>
+            </g>
+            <g transform="matrix(2.74836e-17,-0.448842,1.24411,7.618e-17,69.0702,279.081)">
+                <path d="M178.532,38.779L171.79,36.347L158.307,36.347L151.565,38.779L151.565,179.737L158.307,182.169L171.79,182.169L178.532,179.737L178.532,38.779Z" style="fill:white;"/>
+            </g>
+        </g>
     </g>
     <defs>
-        <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(400,-400,400,400,0,400)"><stop offset="0" style="stop-color:rgb(69,105,144);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(73,190,170);stop-opacity:1"/></linearGradient>
+        <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(400,-400,400,400,0,400)"><stop offset="0" style="stop-color:rgb(50,159,91);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(46,82,102);stop-opacity:1"/></linearGradient>
     </defs>
 </svg>
