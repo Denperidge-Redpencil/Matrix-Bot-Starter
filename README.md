@@ -3,7 +3,8 @@
 
 <span>
 <img src="assets/matrix-botlerplate.png" align="left" style="width:100px;height: 100px; margin: 20px;">
-<br><br>
+
+&nbsp;
 
 A simple but powerful boilerplate, to help you when creating Matrix bots using the [matrix-bot-sdk](https://github.com/turt2live/matrix-bot-sdk).
 </span>
