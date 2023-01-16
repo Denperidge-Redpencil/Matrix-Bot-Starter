@@ -18,7 +18,7 @@ async function onEvents(client : MatrixClient) {
             if (mentioned) {
                 let command = mentioned.toLowerCase();
 
-                handleMultiMessageCommand(client, roomId, event, sender, 
+                handleMultiMessageCommand(client, roomId, event, 
                     (command.includes('picture') || command.includes('avatar')), 
                     true, 
                     {
@@ -28,7 +28,7 @@ async function onEvents(client : MatrixClient) {
                     }, 
                     'Setting new avatar! If your next message is an image, I will update my avatar to that.');
                 
-                handleMultiMessageCommand(client, roomId, event, sender, 
+                handleMultiMessageCommand(client, roomId, event,
                     (command.includes('name') || command.includes('handle')), 
                     true, 
                     {
