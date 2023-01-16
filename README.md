@@ -89,6 +89,9 @@ SVG's are really great. But also their implementation is weird. To give an examp
 ### USERNAME -> LOGINNAME
 It seems weird to use this synonym for username while matrix tends to go for "username". Well, it turns out there is an environment variable on Windows called %USERNAME%, thus giving errors when this was run on Windows. Loginname it is!
 
+### Why not a template repository?
+Template repositories are also meant to be used when generating the repository, but updating from the template repository is roundabout at best, impossible at worst. I want the repositories forked from this to be able to work on their own and be customisable (hence I haven't turned it into an NPM module), but I also want the ability to add more functionality to the template and have that sync towards any bots created from here.
+
 ## License
 This project is licensed under the [MIT License](LICENSE).
 
