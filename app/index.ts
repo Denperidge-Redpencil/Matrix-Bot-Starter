@@ -1,7 +1,7 @@
 import {MatrixClient} from 'matrix-bot-sdk';
 
-import './globals';
-import { startClient } from './client-setup';
+import './utils/globals';
+import { startClient } from './utils/client-setup';
 import { changeAvatar, changeDisplayname } from './commands/customise';
 import { handleMermaidCodeblocks } from './commands/mermaid';
 import { handleMultiMessageCommand, runMultiMessageCommand } from './utils/multimessagecommand';

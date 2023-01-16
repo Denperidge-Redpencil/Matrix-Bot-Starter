@@ -1,4 +1,4 @@
-import { getFromEnv, loadConfig } from './utils/env';
+import { getFromEnv, loadConfig } from './env';
 
 declare global {
     // Only works with var, not with let/const

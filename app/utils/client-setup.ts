@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'fs';
 
-import { getFromEnv, loadConfig } from './utils/env';
+import { getFromEnv, loadConfig } from './env';
 import './globals';
 
 import {MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider, SimpleFsStorageProvider, AutojoinRoomsMixin} from 'matrix-bot-sdk';
