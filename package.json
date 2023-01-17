@@ -1,8 +1,7 @@
 {
   "name": "matrix-bot-starter",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Powerful helper functions and utils for building a Matrix bot using matrix-bot-sdk",
-
   "scripts": {
     "clean": "rm -rf ./lib",
     "build": "npm run clean && npm run build:esm && npm run build:cjs",
@@ -28,7 +27,6 @@
       }
     }
   },
-
   "dependencies": {
     "matrix-bot-sdk": "^0.6.3",
     "dotenv": "^16.0.3",
@@ -38,7 +36,6 @@
     "@types/sharp": "^0.31.1",
     "typescript": "^4.9.4"
   },
-
   "keywords": [
     "Matrix",
     "matrix-bot-sdk",
