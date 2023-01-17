@@ -96,7 +96,7 @@ LOGINNAME="user"  # Optional, will be used to generate an access token and then 
 PASSWORD="pass"  # Optional, will be used to generate an access token and then removed
 ```
 
-For a full example, you can view the Mermatrix repository [here](https://github.com/Denperidge-Redpencil/Mermatrix).
+You can also use the template [here](https://github.com/Denperidge-Redpencil/Matrix-Bot-Starter-Starter), or view a full example [here](https://github.com/Denperidge-Redpencil/Mermatrix).
 
 ## Built-in example commands
 
