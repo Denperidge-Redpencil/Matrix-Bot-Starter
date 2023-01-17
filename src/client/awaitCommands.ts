@@ -17,7 +17,7 @@ interface awaitMoreInput {
 }
 
 // An object that holds multi message commands that are being handled
-let multiMessageCommandQueue : {[senderId: string] : awaitMoreInput} = {}
+let awaitCommandQueue : {[senderId: string] : awaitMoreInput} = {}
 
 
 /**
@@ -49,7 +49,7 @@ export async function awaitMoreInput(client: MatrixClient, roomId: string, event
         }
     }
 
-    multiMessageCommandQueue[senderId] = awaitMessageFrom;
+    awaitCommandQueue[senderId] = awaitMessageFrom;
 
     client.replyNotice(roomId, event, notice);
 }
@@ -65,17 +65,17 @@ export async function awaitMoreInput(client: MatrixClient, roomId: string, event
  * @param content - The content of the event
  * @param sender - The sender of the event
  */
-export function checkMultiMessageAwaits(client: MatrixClient, roomId: string, event: any, content: any, sender: string) {
-    const multiMessageCommandToHandle = sender in multiMessageCommandQueue;
+export function checkAwaitCommands(client: MatrixClient, roomId: string, event: any, content: any, sender: string) {
+    const multiMessageCommandToHandle = sender in awaitCommandQueue;
 
     if (multiMessageCommandToHandle) {
-        let multiMessageCommand : awaitMoreInput = multiMessageCommandQueue[sender];
+        let multiMessageCommand : awaitMoreInput = awaitCommandQueue[sender];
         if (multiMessageCommand.messageType != content['msgtype']) {
             client.replyNotice(roomId, event, `Incorrect message type! Cancelling ${multiMessageCommand.description}`);
         }
         else {
             multiMessageCommand.functionToExecute(client, roomId, event);
         }
-        delete multiMessageCommandQueue[sender];
+        delete awaitCommandQueue[sender];
     }
 }

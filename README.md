@@ -137,8 +137,8 @@ npm publish --public
 ## Structure
 - [src/](src/)
     - [client/](src/client/): Matrix-related functions.
+        - [awaitCommands.ts](src/client/awaitCommands.ts): adds support for multi message commmands.
         - [client-setup.ts](src/client/client-setup.ts)
-        - [multimessagecommands.ts](src/utils/multimessagecommand.ts): adds support for multi message commmands.
         - [onMessage.ts](src/client/onMessage.ts): exposes `onMessage`.
         - [sendImage.ts](src/client/sendImage.ts): exposes `sendImage`.
         - [logerror.ts](src/utils/logerror.ts): exposes a simple function that can be used...

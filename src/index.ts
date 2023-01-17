@@ -1,5 +1,5 @@
 export * from './client/client-setup';
-export * from './client/multiMessageCommands';
+export * from './client/awaitCommands';
 export { default as onMessage } from './client/onMessage';
 export { default as sendImage } from './client/sendImage';
 
