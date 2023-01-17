@@ -114,7 +114,14 @@ After calling one of these commands, the next message you send will be used as i
 - Clone the repository.
 - Get an access token for your bot user (see [t2bot.io/docs/access_tokens/](https://t2bot.io/docs/access_tokens/)).
 - Rename .env.example to .env and change the values.
-- Run `npm install && npm build`.
+- Run `npm install`.
+
+### Publishing
+```
+npm version {major/minor/patch}
+git push
+npm publish --public
+```
 
 ## Structure
 - [src/](src/)
