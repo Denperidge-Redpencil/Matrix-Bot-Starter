@@ -11,7 +11,7 @@ A simple but powerful extension to [matrix-bot-sdk](https://github.com/turt2live
 
 &nbsp;&nbsp;&nbsp;
 
-<img src="assets/Screenshot.png" clear="both" alt="A screenshot of the matrix-bot-starter in action" />
+<img src="assets/screenshot.png" clear="both" alt="A screenshot of the matrix-bot-starter in action" />
 
 &nbsp;
 
