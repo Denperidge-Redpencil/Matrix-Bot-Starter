@@ -9,15 +9,15 @@ import { MatrixClient } from "matrix-bot-sdk"
  * @param functionToExecute - Function to run if the next message from the sender is permitted and of the correct type.
  * @param data - Optional data to pass to the next step
  */
-interface awaitMoreInput {
+export interface AwaitMoreInputOptions {
     description: string,
     messageType: string,
-    functionToExecute: (client: MatrixClient, roomId: string, event: any) => Promise<void> | void,
+    functionToExecute: (client: MatrixClient, roomId: string, event: any, data: AwaitMoreInputOptions) => Promise<void> | void,
     data?: object
 }
 
 // An object that holds multi message commands that are being handled
-let awaitCommandQueue : {[senderId: string] : awaitMoreInput} = {}
+let awaitCommandQueue : {[senderId: string] : AwaitMoreInputOptions} = {}
 
 
 /**
@@ -29,11 +29,11 @@ let awaitCommandQueue : {[senderId: string] : awaitMoreInput} = {}
  * @param {any} event - The event object returned by on.message/sendmessage
  * @param {boolean} test - A boolean on whether the command should be execcuted. @example (command.includes('name') || command.includes('handle')) 
  * @param {boolean} requiresManagePermission - true/false on whether elevated permissions are needed to run this command
- * @param {awaitMoreInput} awaitMessageFrom - Object that defines what type of message to wait for and what to do with it afterwards. @see awaitMoreInput 
+ * @param {AwaitMoreInputOptions} awaitMoreInputOptions - Object that defines what type of message to wait for and what to do with it afterwards. @see AwaitMoreInputOptions 
  * @param {string} notice - Notice message to send when the first part of the command is issued 
  * @returns 
  */
-export async function awaitMoreInput(client: MatrixClient, roomId: string, event: any, test: boolean, requiresManagePermission : boolean, awaitMessageFrom: awaitMoreInput, notice: string) {
+export async function awaitMoreInput(client: MatrixClient, roomId: string, event: any, test: boolean, requiresManagePermission : boolean, awaitMoreInputOptions: AwaitMoreInputOptions, notice: string) {
     if (!test) {
         return;
     }
@@ -49,7 +49,7 @@ export async function awaitMoreInput(client: MatrixClient, roomId: string, event
         }
     }
 
-    awaitCommandQueue[senderId] = awaitMessageFrom;
+    awaitCommandQueue[senderId] = awaitMoreInputOptions;
 
     client.replyNotice(roomId, event, notice);
 }
@@ -66,15 +66,15 @@ export async function awaitMoreInput(client: MatrixClient, roomId: string, event
  * @param sender - The sender of the event
  */
 export function checkAwaitCommands(client: MatrixClient, roomId: string, event: any, content: any, sender: string) {
-    const multiMessageCommandToHandle = sender in awaitCommandQueue;
+    const commandAwaitedFromSender = sender in awaitCommandQueue;
 
-    if (multiMessageCommandToHandle) {
-        let multiMessageCommand : awaitMoreInput = awaitCommandQueue[sender];
-        if (multiMessageCommand.messageType != content['msgtype']) {
-            client.replyNotice(roomId, event, `Incorrect message type! Cancelling ${multiMessageCommand.description}`);
+    if (commandAwaitedFromSender) {
+        let awaitMoreInputOptions : AwaitMoreInputOptions = awaitCommandQueue[sender];
+        if (awaitMoreInputOptions.messageType != content['msgtype']) {
+            client.replyNotice(roomId, event, `Incorrect message type! Cancelling ${awaitMoreInputOptions.description}`);
         }
         else {
-            multiMessageCommand.functionToExecute(client, roomId, event);
+            awaitMoreInputOptions.functionToExecute(client, roomId, event, awaitMoreInputOptions);
         }
         delete awaitCommandQueue[sender];
     }
