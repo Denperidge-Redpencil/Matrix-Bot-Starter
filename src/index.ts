@@ -6,4 +6,4 @@ export { default as sendImage } from './client/sendImage';
 export * from './commands/customise';
 
 export * from './utils/env';
-export { default as logError } from './utils/logError';
+export { default as logError } from './client/logError';

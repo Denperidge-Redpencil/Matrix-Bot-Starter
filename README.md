@@ -141,12 +141,14 @@ npm publish --public
         - [multimessagecommands.ts](src/utils/multimessagecommand.ts): adds support for multi message commmands.
         - [onMessage.ts](src/client/onMessage.ts): exposes `onMessage`.
         - [sendImage.ts](src/client/sendImage.ts): exposes `sendImage`.
+        - [logerror.ts](src/utils/logerror.ts): exposes a simple function that can be used...
+            - Shorthand with promises, e.g. `promise.then(()=>{...}).catch(logError);`.
+            - Longer to log + send a message to the user, e.g. `promise.then(()=>{...}).catch((err) =>{logError(err, client, roomId)});`
     - [commands/](src/commands/): the folder containing commands that can be used from the Matrix chat.
 
     - [utils/](src/utils/): non-Matrix related functions.
         - [env.ts](src/utils/env.ts): (re)loads the .env file, and exposes getFromEnv, a function that returns environment variables but exits if undefined.
         - [globals.ts](src/utils/globals.ts): defines globalThis types.
-        - [logerror.ts](src/utils/logerror.ts): exposes a simple function to be used with promises, e.g. `promise.then(()=>{...}).catch(logerror)`.
 
     - [index.ts](src/index.ts): defines exports.
 - [assets/](assets/): Images (and an image script) for use in the README.
