@@ -116,6 +116,17 @@ After calling one of these commands, the next message you send will be used as i
 - Rename .env.example to .env and change the values.
 - Run `npm install && npm run build`.
 
+To locally pack & use it from another project, go into that project folder and run the following.
+```bash
+# The git clone url can be changed, or you can just mv or ln -s a local version
+git clone https://github.com/Denperidge-Redpencil/Matrix-Bot-Starter.git
+cd Matrix-Bot-Starter/
+npm run build
+npm pack
+cd ..
+npm install ./Matrix-Bot-Starter/*.tgz
+```
+
 ### Publishing
 ```
 npm version {major/minor/patch}

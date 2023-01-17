@@ -2,6 +2,14 @@
   "name": "matrix-bot-starter",
   "version": "1.0.1",
   "description": "Powerful helper functions and utils for building a Matrix bot using matrix-bot-sdk",
+
+  "scripts": {
+    "clean": "rm -rf ./lib",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs",
+    "build:esm": "npx tsc -p ./configs/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
+    "build:cjs": "npx tsc -p ./configs/tsconfig.cjs.json",
+    "prepack": "npm run build"
+  },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/types/index.d.ts",
   "files": [
@@ -20,27 +28,26 @@
       }
     }
   },
+
   "dependencies": {
-    "dotenv": "^16.0.3",
     "matrix-bot-sdk": "^0.6.3",
+    "dotenv": "^16.0.3",
     "sharp": "^0.31.3"
   },
   "devDependencies": {
     "@types/sharp": "^0.31.1",
     "typescript": "^4.9.4"
   },
-  "scripts": {
-    "clean": "rm -rf ./lib",
-    "build": "npm run clean && npm run build:esm && npm run build:cjs",
-    "build:esm": "npx tsc -p ./configs/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
-    "build:cjs": "npx tsc -p ./configs/tsconfig.cjs.json",
-    "prepack": "npm run build"
-  },
+
   "keywords": [
     "Matrix",
     "matrix-bot-sdk",
     "typescript"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Denperidge-Redpencil/Matrix-Bot-Starter"
+  },
   "author": "Denperidge",
   "license": "MIT"
 }
