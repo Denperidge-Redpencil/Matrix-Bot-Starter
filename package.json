@@ -2,8 +2,8 @@
   "name": "matrix-catbot",
   "version": "1.0.0",
   "description": "Powerful helper functions and utils for building a Matrix bot using matrix-bot-sdk",
-  "main": "./lib/cjs/types/index.d.ts",
-  "types": "./lib/cjs/index.js",
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/cjs/types/index.d.ts",
   "files": [
     "lib/**/*"
   ],

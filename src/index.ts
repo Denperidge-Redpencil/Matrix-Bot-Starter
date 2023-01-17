@@ -1,36 +1,9 @@
-// client imports, alphabetically
-export { newClient } from './client/client-setup';
-/*
-import onMessage from './client/onMessage';
-import sendImage from './client/sendImage';
-import { multiMessageCommandSetup, multiMessageCommandHandle } from './client/multiMessageCommands';
+export * from './client/client-setup';
+export * from './client/multiMessageCommands';
+export { default as onMessage } from './client/onMessage';
+export { default as sendImage } from './client/sendImage';
 
-// utils imports, alphabetically
-import * as Env from './utils/env';
-//   globals is used internally, skip
-import logError from './utils/logError';
+export * from './commands/customise';
 
-// command imports, alphabetically
-import * as Customise from './commands/customise';
-
-
-module.exports = {
-    newClient: newClient,
-    client: {
-        onMessage: onMessage,
-        sendImage: sendImage
-    },
-    utils: { 
-        env: Env,
-        logError: logError,
-        multiMessageCommandSetup: multiMessageCommandSetup,
-        multiMessageCommandHandle: multiMessageCommandHandle,
-    },
-    commands: {
-        customise: {
-            changeAvatar: Customise.changeAvatar,
-            changeDisplayname: Customise.changeDisplayname
-        }
-    }
-};
-*/
+export * from './utils/env';
+export * from './utils/logError';
