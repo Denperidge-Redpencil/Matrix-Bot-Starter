@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
 /**
  * Reloads the environment variables from .env
@@ -26,3 +27,4 @@ export function getFromEnv(name : string, allowEmpty : boolean=false) : string {
     }
 }
 
+loadConfig();  // Run on import
