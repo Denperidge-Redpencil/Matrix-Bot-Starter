@@ -17,10 +17,21 @@ A simple but powerful extension to [matrix-bot-sdk](https://github.com/turt2live
 
 All of the following comes built-in:
 - Multi-message commands.
-- Image sending with conversion to different formats.
-- Handling environment variables.
-- Generating an access token from username/password.
-- `onMessage`, a client.on('room.message') replacement that lets the client automatically detect edits, when it is mentioned, not reply to its own messages, etc.
+- `startClient`, a no config client setup from environment variables
+    1. Reads the .env file, either reading the access token or generating it from - and subsequently removing - the provided username/password.
+    2. Sets up the Matrix client, including encryption, mixins, and the regex for when the bot is mentioned.
+    3. Ties 1. & 2. together and returns the MatrixClient object.
+- `onMessage`, a client.on('room.message') extension that...
+    1. Returns extra variables, including whether the message is an edit, html, removing the @bot from a mention message 
+    2. Stops the bot from responding to itself.
+    3. Automatically implements `multiMessageCommandHandle`.
+- `sendImage`, a helper function that...
+    1. Automatically gets the image dimensions & size and sets it in the metadata.
+    2. Converts the image to the passed mimetype.
+    3. Uploads the image encrypted to Matrix.
+    4. Easily allows the image to be used in a reply.
+    5. In case of an SVG, generates a png thumbnail for increased compatibility.
+
 - An example command that allows changing the bots display name & avatar from within the chat.
 
 ## Installation
@@ -109,22 +120,9 @@ After calling one of these commands, the next message you send will be used as i
 - [src/](src/)
     - [client/](src/client/): Matrix-related functions.
         - [client-setup.ts](src/client/client-setup.ts)
-            1. Reads the .env file, either reading the access token or generating it from - and subsequently removing - the provided username/password.
-            2. Sets up the Matrix client, including encryption, mixins, and the regex for when the bot is mentioned.
-            3. Ties 1. & 2. together and returns the MatrixClient object.
-            4. Additionally exposes onMessage, a function that can be used as an alternative to client.on('room.message'). Including automatic handling of multi message commands, returning extra variables like booleans about whether a message is an edit, and not responding to its own messages.
         - [multimessagecommands.ts](src/utils/multimessagecommand.ts): adds support for multi message commmands.
-        - [onMessage.ts](src/client/onMessage.ts): exposes onMessage, a client.on('room.message') extension that
-            1. Returns extra variables, including whether the message is an edit, html, mentions the client/bot...
-            2. Stops the bot from responding to itself.
-            3. Automatically implements `multiMessageCommandHandle`.
-        - [sendImage.ts](src/client/sendImage.ts): exposes sendImage, a helper function that
-            1. Automatically gets the image dimensions & size and sets it in the metadata.
-            2. Converts the image to the passed mimetype.
-            3. Uploads the image encrypted to Matrix.
-            4. Easily allows the image to be used in a reply.
-            5. In case of an SVG, generates a png thumbnail for increased compatibility.
-
+        - [onMessage.ts](src/client/onMessage.ts): exposes `onMessage`.
+        - [sendImage.ts](src/client/sendImage.ts): exposes `sendImage`.
     - [commands/](src/commands/): the folder containing commands that can be used from the Matrix chat.
 
     - [utils/](src/utils/): non-Matrix related functions.
