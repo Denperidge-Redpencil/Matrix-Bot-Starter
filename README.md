@@ -48,7 +48,7 @@ The following code is enough to get a full bot up and running!
 ```typescript
 // index.ts
 import { MatrixClient } from 'matrix-bot-sdk';
-import { newClient, multiMessageCommandSetup, onMessage, changeAvatar, changeDisplayname } from 'matrix-catbot';
+import { newClient, multiMessageCommandSetup, onMessage, changeAvatar, changeDisplayname } from 'matrix-bot-starter';
 
 async function onEvents(client : MatrixClient) {
     onMessage(client, 
