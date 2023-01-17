@@ -1,5 +1,5 @@
 import { MatrixClient } from "matrix-bot-sdk";
-import { multiMessageCommandHandle } from "./multiMessageCommands";
+import { checkMultiMessageAwaits } from "./multiMessageCommands";
 
 /**
  * A function that uses client.on('room.message') to expand its functionality
@@ -51,7 +51,7 @@ export default function onMessage(client: MatrixClient,
             }
         }
 
-        multiMessageCommandHandle(client, roomId, event, content, sender);
+        checkMultiMessageAwaits(client, roomId, event, content, sender);
 
         callback(roomId, event, sender, content, body, requestEventId, isEdit, isHtml, mentioned);
     });
