@@ -1,6 +1,8 @@
 import { MatrixClient } from "matrix-bot-sdk";
 import { checkAwaitCommands } from "./awaitCommands";
 
+import '../utils/globals';
+
 /**
  * A function that uses client.on('room.message') to expand its functionality
  * - Giving you extra variables besides roomId & event ( @see onMessageCallback )
