@@ -34,8 +34,7 @@
     "build": "npm run clean && npm run build:esm && npm run build:cjs",
     "build:esm": "npx tsc -p ./configs/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
     "build:cjs": "npx tsc -p ./configs/tsconfig.cjs.json",
-    "prepack": "npm run build",
-    "postinstall": "npm run build"
+    "prepack": "npm run build"
   },
   "keywords": [
     "Matrix",
