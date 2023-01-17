@@ -1,17 +1,17 @@
-# Matrix-Botlerplate
+# Matrix-Bot-Starter
 
 
 <span>
-<img src="assets/matrix-botlerplate.png" align="left" style="width:100px;height: 100px; margin: 20px;">
+<img src="assets/matrix-bot-starter.png" align="left" style="width:100px;height: 100px; margin: 20px;">
 
 &nbsp;
 
-A simple but powerful boilerplate, to help you when creating Matrix bots using the [matrix-bot-sdk](https://github.com/turt2live/matrix-bot-sdk).
+A simple but powerful extension to [matrix-bot-sdk](https://github.com/turt2live/matrix-bot-sdk), to help you avoid boilerplating when creating Matrix bots.
 </span>
 
 &nbsp;&nbsp;&nbsp;
 
-<img src="assets/Screenshot.png" clear="both" alt="A screenshot of the matrix-botlerplate in action" />
+<img src="assets/Screenshot.png" clear="both" alt="A screenshot of the matrix-bot-starter in action" />
 
 &nbsp;
 
@@ -20,13 +20,76 @@ All of the following comes built-in:
 - Image sending with conversion to different formats
 - Handling environment variables
 - Generating an access token from username/password
-- onMessage, a client.on('room.message') replacement that lets the client automatically detect edits, when it is mentioned, not reply to its own messages, etc.
+- `onMessage`, a client.on('room.message') replacement that lets the client automatically detect edits, when it is mentioned, not reply to its own messages, etc.
 - An example command that allows changing the bots display name & avatar from within the chat
 
+## Installation
 
-## Built-in example command
+You can simply install this package using npm!
+```bash
+npm i matrix-bot-starter
+```
 
-There are also some commands you can use when @mentioning the bot!
+## Usage
+
+The following code is enough to get a full bot up and running!
+
+```typescript
+// index.ts
+import { MatrixClient } from 'matrix-bot-sdk';
+import { newClient, multiMessageCommandSetup, onMessage, changeAvatar, changeDisplayname } from 'matrix-catbot';
+
+async function onEvents(client : MatrixClient) {
+    onMessage(client, 
+        async (roomId : string, event : any, sender: string, content: any, body: any, requestEventId: string, isEdit: boolean, isHtml: boolean, mentioned: string) => {
+        
+        if (isHtml) {
+            if (mentioned) {
+                let command = mentioned.toLowerCase();
+
+                multiMessageCommandSetup(client, roomId, event, 
+                    (command.includes('picture') || command.includes('avatar')), 
+                    true, 
+                    {
+                        description: 'avatar change',
+                        messageType: 'm.image',
+                        functionToExecute: changeAvatar
+                    }, 
+                    'Setting new avatar! If your next message is an image, I will update my avatar to that.');
+                
+                multiMessageCommandSetup(client, roomId, event,
+                    (command.includes('name') || command.includes('handle')), 
+                    true, 
+                    {
+                        description: 'display name change',
+                        messageType: 'm.text',
+                        functionToExecute: changeDisplayname
+                    }, 
+                    'Setting new display name! I\'ll set it to the contents of your next message.');
+            }
+        }
+    });
+
+}
+
+newClient().then((client : MatrixClient) => {
+    onEvents(client);
+});
+```
+
+```env
+# .env
+HOMESERVER_URL="http://example.com:8008"
+ACCESS_TOKEN="syt_yourBotAccountAccessToken"
+LOGINNAME="user"  # Optional, will be used to generate an access token and then removed
+PASSWORD="pass"  # Optional, will be used to generate an access token and then removed
+```
+
+For a full example, you can view the Mermatrix repository [here](https://github.com/Denperidge-Redpencil/Mermatrix).
+
+## Built-in example commands
+
+There are also some commands you can implement when @mentioning the bot!
 
 | command |                  function                   |
 | ------- | ------------------------------------------- |
@@ -36,47 +99,42 @@ There are also some commands you can use when @mentioning the bot!
 You don't have to call them with any parameters!
 After calling one of these commands, the next message you send will be used as input.
 
-## Installing
+## Building locally
 - Clone the repository.
 - Get an access token for your bot user (see [t2bot.io/docs/access_tokens/](https://t2bot.io/docs/access_tokens/)).
 - Rename .env.example to .env and change the values.
 - Run `npm install && npm build`.
 
-
-|    npm run   |                   function                 |
-| ------------ | ------------------------------------------ |
-| start        | Run build/index.js                         |
-| dev          | Run & watch app/index.ts                   |
-| build        | Build app/ into build/                     |
-| start-docker | Run the Dockerfile                         |
-| dev-docker   | Build & run the Dockerfile                 |
-| build-docker | Copy .env to .env.docker & build the image |
-
 ## Structure
-- [app/](app/): Typescript code/src.
-    - [@types/headless-mermaid](app/%40types/headless-mermaid/): type definition for the headless-mermaid api.
-    - [commands/](app/commands/): the folder containing commands that can be used from the Matrix chat.
-    - [utils/](app/utils/): functions used by the bot.
-        - [client-setup](app/utils/client-setup.ts)
+- [src/](src/)
+    - [client/](src/client/): Matrix-related functions.
+        - [client-setup](src/client/client-setup.ts)
             1. Reads the .env file, either reading the access token or generating it from - and subsequently removing - the provided username/password.
             2. Sets up the Matrix client, including encryption, mixins, and the regex for when the bot is mentioned.
             3. Ties 1. & 2. together and returns the MatrixClient object.
             4. Additionally exposes onMessage, a function that can be used as an alternative to client.on('room.message'). Including automatic handling of multi message commands, returning extra variables like booleans about whether a message is an edit, and not responding to its own messages.
-        - [env](app/utils/env.ts): (re)loads the .env file, and exposes getFromEnv, a function that returns environment variables but exits if undefined.
-        - [globals](app/utils/globals.ts): defines globalThis types.
-        - [logerror](app/utils/logerror.ts): exposes a simple function to be used with promises, e.g. `promise.then(()=>{...}).catch(logerror)`.
-        - [multimessagecommands](app/utils/multimessagecommand.ts): adds support for multi message commmands. ![A screenshot of Element where a multi message command is displayed](assets/Screenshot-Multimessagecommands.png)
-        - [sendImage](app/utils/sendImage.ts): exposes sendImage, a helper function that
+        - [multimessagecommands](src/utils/multimessagecommand.ts): adds support for multi message commmands. ![A screenshot of Element where a multi message command is displayed](assets/Screenshot-Multimessagecommands.png)
+        - [onMessage](src/client/onMessage.ts): exposes onMessage, a client.on('room.message') extension that
+            1. Returns extra variables, including whether the message is an edit, html, mentions the client/bot...
+            2. Stops the bot from responding to itself.
+            3. Automatically implements `multiMessageCommandHandle`.
+        - [sendImage](src/client/sendImage.ts): exposes sendImage, a helper function that
             1. Automatically gets the image dimensions & size and sets it in the metadata.
             2. Converts the image to the passed mimetype.
             3. Uploads the image encrypted to Matrix.
             4. Easily allows the image to be used in a reply.
             5. In case of an SVG, generates a png thumbnail for increased compatibility.
-    - [index](app/index.ts): runs the startClient from [client-setup](app/utils/client-setup.ts) and defines the commands to be run.
+
+    - [commands/](src/commands/): the folder containing commands that can be used from the Matrix chat.
+
+    - [utils/](src/utils/): non-Matrix related functions.
+        - [env](src/utils/env.ts): (re)loads the .env file, and exposes getFromEnv, a function that returns environment variables but exits if undefined.
+        - [globals](src/utils/globals.ts): defines globalThis types.
+        - [logerror](src/utils/logerror.ts): exposes a simple function to be used with promises, e.g. `promise.then(()=>{...}).catch(logerror)`.
+
+    - [index](src/index.ts): defines exports.
 - [assets/](assets/): Images (and an image script) for use in the README.
-- *build/*: Made during runtime. Compiled javascript code.
-- *.env*: Manually made. Environment variables to use when running locally.
-- *.env.docker* Manually made or generated from *.env*. Environment variables for use in Docker.
+- *lib/*: Made during runtime. Compiled javascript code.
 
 
 ## Quirks
@@ -88,9 +146,6 @@ SVG's are really great. But also their implementation is weird. To give an examp
 
 ### USERNAME -> LOGINNAME
 It seems weird to use this synonym for username while matrix tends to go for "username". Well, it turns out there is an environment variable on Windows called %USERNAME%, thus giving errors when this was run on Windows. Loginname it is!
-
-### Why not a template repository?
-Template repositories are also meant to be used when generating the repository, but updating from the template repository is roundabout at best, impossible at worst. I want the repositories forked from this to be able to work on their own and be customisable (hence I haven't turned it into an NPM module), but I also want the ability to add more functionality to the template and have that sync towards any bots created from here.
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
