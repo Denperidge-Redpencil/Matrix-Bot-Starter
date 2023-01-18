@@ -12,7 +12,7 @@ import { MatrixClient } from "matrix-bot-sdk"
 export interface AwaitMoreInputOptions {
     description: string,
     messageType: string,
-    functionToExecute: (client: MatrixClient, roomId: string, event: any, data: AwaitMoreInputOptions) => Promise<void> | void,
+    functionToExecute: (client: MatrixClient, roomId: string, event: any, options: AwaitMoreInputOptions) => Promise<void> | void,
     data?: object
 }
 
