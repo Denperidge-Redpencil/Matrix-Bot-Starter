@@ -13,7 +13,7 @@ export interface AwaitMoreInputOptions {
     description: string,
     messageType: string,
     functionToExecute: (client: MatrixClient, roomId: string, event: any, options: AwaitMoreInputOptions) => Promise<void> | void,
-    data?: object
+    data?: any
 }
 
 // An object that holds multi message commands that are being handled
