@@ -15,7 +15,7 @@ import { MatrixClient } from "matrix-bot-sdk";
 export default function logError(err: any, client?: MatrixClient, roomId?: string) {
     console.error(err);
     if (client !== undefined && roomId !== undefined) {
-        client.sendMessage(roomId, JSON.stringify(err));
+        client.sendNotice(roomId, JSON.stringify(err));
     }
 };
 
