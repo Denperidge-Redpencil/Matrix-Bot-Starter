@@ -27,17 +27,12 @@ let awaitCommandQueue : {[senderId: string] : AwaitMoreInputOptions} = {}
  * @param {MatrixClient} client - The bot client, generated from @see generateAndStartClient
  * @param {string} roomId - The id of the room to send the message in
  * @param {any} event - The event object returned by on.message/sendmessage
- * @param {boolean} test - A boolean on whether the command should be execcuted. @example (command.includes('name') || command.includes('handle')) 
- * @param {boolean} requiresManagePermission - true/false on whether elevated permissions are needed to run this command
+- * @param {boolean} requiresManagePermission - true/false on whether elevated permissions are needed to run this command
  * @param {AwaitMoreInputOptions} awaitMoreInputOptions - Object that defines what type of message to wait for and what to do with it afterwards. @see AwaitMoreInputOptions 
  * @param {string} notice - Notice message to send when the first part of the command is issued 
  * @returns 
  */
-export async function awaitMoreInput(client: MatrixClient, roomId: string, event: any, test: boolean, requiresManagePermission : boolean, awaitMoreInputOptions: AwaitMoreInputOptions, notice: string) {
-    if (!test) {
-        return;
-    }
-
+export async function awaitMoreInput(client: MatrixClient, roomId: string, event: any, requiresManagePermission : boolean, awaitMoreInputOptions: AwaitMoreInputOptions, notice: string) {
     const senderId = event['sender'];
 
     if (requiresManagePermission) {
