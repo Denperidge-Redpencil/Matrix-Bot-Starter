@@ -27,12 +27,13 @@ let awaitCommandQueue : {[senderId: string] : AwaitMoreInputOptions} = {}
  * @param {MatrixClient} client - The bot client, generated from @see generateAndStartClient
  * @param {string} roomId - The id of the room to send the message in
  * @param {any} event - The event object returned by on.message/sendmessage
-- * @param {boolean} requiresManagePermission - true/false on whether elevated permissions are needed to run this command
+ * @param {boolean} requiresManagePermission - true/false on whether elevated permissions are needed to run this command
  * @param {AwaitMoreInputOptions} awaitMoreInputOptions - Object that defines what type of message to wait for and what to do with it afterwards. @see AwaitMoreInputOptions 
- * @param {string} notice - Notice message to send when the first part of the command is issued 
+ * @param {string} [notice] - Notice message to send when the first part of the command is issued
+ * @param {boolean} [noticeInThread] - Whether to send the notice in a thread
  * @returns 
  */
-export async function awaitMoreInput(client: MatrixClient, roomId: string, event: any, requiresManagePermission : boolean, awaitMoreInputOptions: AwaitMoreInputOptions, notice: string) {
+export async function awaitMoreInput(client: MatrixClient, roomId: string, event: any, requiresManagePermission : boolean, awaitMoreInputOptions: AwaitMoreInputOptions, notice?: string, noticeInThread: boolean = false) {
     const senderId = event['sender'];
 
     if (requiresManagePermission) {
@@ -46,7 +47,23 @@ export async function awaitMoreInput(client: MatrixClient, roomId: string, event
 
     awaitCommandQueue[senderId] = awaitMoreInputOptions;
 
-    client.replyNotice(roomId, event, notice);
+    if (!notice) {
+        return;
+    }
+
+    if (!noticeInThread) {
+        client.replyNotice(roomId, event, notice);
+    } else {
+        const threadStartEventId = event['content']['m.relates_to'] ? event['content']['m.relates_to']['event_id'] : event['event_id'];
+        client.sendMessage(roomId, {
+            body: notice,
+            msgtype: 'm.notice',
+            'm.relates_to': {
+                'rel_type': 'm.thread',
+                'event_id': threadStartEventId
+            }
+        });
+    }
 }
 
 /**
