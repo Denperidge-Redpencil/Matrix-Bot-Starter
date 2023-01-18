@@ -2,7 +2,7 @@
 
 
 <span>
-<img src="assets/matrix-bot-starter.png" align="left" style="width:100px;height: 100px; margin: 20px;">
+<img src="assets/matrix-bot-starter.png" align="left" style="width:100px;height: 100px; margin: 20px; max-width: 200px;">
 
 &nbsp;
 
