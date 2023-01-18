@@ -1,2 +1,7 @@
 node_modules/
 lib/
+
+# For use with pack-and-test.sh
+Matrix-Bot-Starter-Starter/
+matrix-bot-starter-*.tgz  
+
