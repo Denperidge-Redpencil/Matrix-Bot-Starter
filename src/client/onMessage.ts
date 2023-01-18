@@ -44,12 +44,15 @@ export default function onMessage(client: MatrixClient,
         const isEdit = 'm.new_content' in content;
         const isHtml = 'formatted_body' in content;
 
-        let mentioned = '';
+        let mentioned : string = '';
         if (isHtml) {
+            const selfEscaped = clientId.replace(/\./g, '\\.');
+            const regexSelfMention = new RegExp(`<a href=".*?${selfEscaped}">.*?<\/a>[:]`, 'g');
+
             const formatted_body = content['formatted_body'];
             const mentionString = formatted_body.match(regexSelfMention);
             if (mentionString != null) {
-                mentioned = formatted_body.replace(mentionString, '');
+                mentioned = formatted_body.replace(mentionString, '').trimStart();
             }
         }
 

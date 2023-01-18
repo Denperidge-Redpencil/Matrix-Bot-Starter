@@ -50,8 +50,6 @@ export async function setupClient() {
     const client = new MatrixClient(homeserverUrl, getFromEnv('ACCESS_TOKEN'), storage, crypto);
 
     globalThis.clientId = await client.getUserId();
-    let selfEscaped = clientId.replace(/\./g, '\\.');
-    globalThis.regexSelfMention = new RegExp(`<a href=".*?${selfEscaped}">[:]?`, 'g');
     AutojoinRoomsMixin.setupOnClient(client);
     await client.crypto.prepare(await client.getJoinedRooms());
 
