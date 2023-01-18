@@ -2,8 +2,8 @@ import { readFileSync, writeFileSync } from 'fs';
 
 import { MatrixClient, MatrixAuth, RustSdkCryptoStorageProvider, SimpleFsStorageProvider, AutojoinRoomsMixin } from 'matrix-bot-sdk';
 
-import '../utils/globals';
 import { getFromEnv, loadConfig } from '../utils/env';
+import '../utils/globals';
 
 
 globalThis.homeserverUrl = getFromEnv('HOMESERVER_URL');
@@ -17,7 +17,7 @@ globalThis.homeserverUrl = getFromEnv('HOMESERVER_URL');
  *  - reloads the environment variables
  * Otherwise, it simply passes
  */
-async function generateAccessToken() : Promise<void> {
+export async function generateAccessToken() : Promise<void> {
     if (getFromEnv('PASSWORD', true) != '') {
         console.log("Deteced password. Generating access_token...");
         
@@ -44,9 +44,9 @@ async function generateAccessToken() : Promise<void> {
  * 
  * @returns {MatrixClient} - A Matrix client for the bot, ready to be started
  */
-async function matrixLogin() {
-    const storage = new SimpleFsStorageProvider('bot.json');
-    const crypto = new RustSdkCryptoStorageProvider('./crypto');
+export async function setupClient() {
+    const storage = new SimpleFsStorageProvider('./data/bot.json');
+    const crypto = new RustSdkCryptoStorageProvider('./data/crypto');
     const client = new MatrixClient(homeserverUrl, getFromEnv('ACCESS_TOKEN'), storage, crypto);
 
     globalThis.clientId = await client.getUserId();
@@ -82,5 +82,5 @@ export async function startClient(client: MatrixClient) {
  * @returns {Promise<MatrixClient>} - The promise for the Matrix client/bot
  */
 export async function newClient() : Promise<MatrixClient> {
-    return generateAccessToken().then(matrixLogin).then(startClient);
+    return generateAccessToken().then(setupClient).then(startClient);
 }
