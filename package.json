@@ -1,6 +1,6 @@
 {
   "name": "matrix-bot-starter",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Powerful helper functions and utils for building a Matrix bot using matrix-bot-sdk",
   "scripts": {
     "clean": "rm -rf ./lib",
