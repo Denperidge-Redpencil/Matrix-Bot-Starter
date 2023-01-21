@@ -60,7 +60,7 @@ export default function onMessage(client: MatrixClient,
         }
         
         const relatesTo = 'm.relates_to' in content ? content['m.relates_to'] : {};
-        const relatesToEventId = relatesTo ? relatesTo['event_id'] : "";
+        const relatesToEventId = relatesTo && 'event_id' in relatesTo ? relatesTo['event_id'] : "";
         const relatesToRelType = relatesToEventId && 'rel_type' in relatesTo ? relatesTo['rel_type'] : "";
 
         checkAwaitCommands(client, roomId, event, content, sender);
