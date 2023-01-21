@@ -26,11 +26,14 @@ import '../utils/globals';
  * @param {boolean} isEdit - Returns whether the message is an edit or not
  * @param {boolean} isHtml - Returns whether the message is written in HTML or not
  * @param {string} mentioned - Returns '' if the client/bot is not mentioned, or the HTML string of the mention itself if the client/bot *is* mentioned
+ * @param {any} relatesTo - Returns {} if the messages has no relates_to field, or the relates_to object of the event
+ * @param {string} relatesToEventId - Returns '' if the message has no relates_to field, or the event id of the related event
+ * @param {string} relatesToRelType - Returns '' if the message has no relates_to field, or the rel type of the related event
  */
 
 export default function onMessage(client: MatrixClient, 
-    callback : (roomId: string, event: any, sender: string, content: any,
-                body: any, requestEventId: string, isEdit: boolean, isHtml: boolean, mentioned: string ) => {}) {
+    callback : (roomId: string, event: any, sender: string, content: any, body: any, requestEventId: string, isEdit: boolean,
+                isHtml: boolean, mentioned: string, relatesTo: any, relatesToEventId: string, relatesToRelType: string) => {}) {
     client.on('room.message', async (roomId, event) => { 
         if (!event['content']) return;  // If no content, skip
         
@@ -55,9 +58,13 @@ export default function onMessage(client: MatrixClient,
                 mentioned = formatted_body.replace(mentionString, '').trimStart();
             }
         }
+        
+        const relatesTo = 'm.relates_to' in content ? content['m.relates_to'] : {};
+        const relatesToEventId = relatesTo ? relatesTo['event_id'] : "";
+        const relatesToRelType = relatesToEventId && 'rel_type' in relatesTo ? relatesTo['rel_type'] : "";
 
         checkAwaitCommands(client, roomId, event, content, sender);
 
-        callback(roomId, event, sender, content, body, requestEventId, isEdit, isHtml, mentioned);
+        callback(roomId, event, sender, content, body, requestEventId, isEdit, isHtml, mentioned, relatesTo, relatesToEventId, relatesToRelType);
     });
 }
