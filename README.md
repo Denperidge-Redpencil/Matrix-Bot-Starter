@@ -43,6 +43,8 @@ npm i matrix-bot-starter
 
 ## Usage
 
+*Oh, you can also use the [Matrix-Bot-Starter-Starter template repository](https://github.com/Denperidge-Redpencil/Matrix-Bot-Starter-Starter)!*
+
 The following code is enough to get a full bot up and running!
 
 ```typescript
